@@ -1,6 +1,6 @@
 # ADEON
 
-<img align="right" src="images\adeon-logo-192x192.png"><br>
+<img align="right" src="images\adeon-logo-192x192.png">
 
 ADEON is a software solution for controlling GSM devices (GSM gates, relays, modules etc.) via SMS commands. It consists of two main parts:
 
