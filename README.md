@@ -11,4 +11,4 @@ ADEON app allows user to create a list of GSM devices with predefined commands. 
 
 The library for embedded development kits provides user an API for receiving commands from the ADEON app. It is primarily intended for use with Arduino-like boards but can be also easily integrated to other C/C++ projects.
 
-For more information please visit our [Wiki page]([https://link](https://github.com/JSC-electronics/adeon/wiki)).
+For more information please visit our [Wiki page](https://github.com/JSC-electronics/adeon/wiki).
