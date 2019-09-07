@@ -1,4 +1,5 @@
 # ADEON
+[![Build Status](https://travis-ci.com/JSC-electronics/Adeon.svg?branch=master)](https://travis-ci.com/JSC-electronics/Adeon)
 [![GitHub release](https://img.shields.io/github/release/JSC-electronics/ObjectButton.svg?maxAge=3600)](https://github.com/JSC-electronics/Adeon/releases)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://github.com/JSC-electronics/Adeon/blob/master/LICENSE)
 

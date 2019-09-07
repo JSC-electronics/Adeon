@@ -1,26 +1,25 @@
-# This will run on Travis' 'new' container-based infrastructure
-sudo: false 
-
+sudo: false
+language: ruby
+dist: bionic
+git:
+  depth: false
+  quiet: true
 # Blacklist
 branches:
-  only:
-    - master
-
-# Install dependencies
-addons:
-  apt:
-    packages:
-      - doxygen
-
-# Build your code e.g. by calling make
+  except:
+    - gh-pages
+before_install:
+  - sudo apt-get install -y doxygen graphviz
 script:
-  - doxygen Doxyfile
-
-# Generate and deploy documentation
+   - bundle install
+   - bundle exec arduino_ci_remote.rb
+   - doxygen doc/Doxyfile
 deploy:
   provider: pages
-  skip_cleanup: true
-  local_dir: html
-  github_token: $GH_REPO_TOKEN
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN
+  keep-history: false
+  local-dir: doc/html
+  verbose: true
   on:
     branch: master
