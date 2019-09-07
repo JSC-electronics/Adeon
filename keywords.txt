@@ -1,0 +1,47 @@
+#######################################
+# Syntax Coloring Map for Adeon
+#######################################
+
+#######################################
+# Methods and Functions (KEYWORD1)
+#######################################
+
+addUser	KEYWORD1
+deleteUser	KEYWORD1
+editUserPhone	KEYWORD1
+editUserRights	KEYWORD1
+isUserInAdeon	KEYWORD1
+getNumOfUsers	KEYWORD1
+getUserRightsLevel	KEYWORD1
+printUsers	KEYWORD1
+
+addParam	KEYWORD1
+addParamWithCallback	KEYWORD1
+deleteParam	KEYWORD1
+editParamName	KEYWORD1
+editParamValue	KEYWORD1
+isParamInAdeon	KEYWORD1
+getNumOfParams	KEYWORD1
+getParamValue	KEYWORD1
+printParams	KEYWORD1
+
+parseBuf	KEYWORD1
+isAdeonReady	KEYWORD1
+
+#######################################
+# Instances (KEYWORD1)
+#######################################
+
+Adeon	KEYWORD1
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+ADEON_ADMIN LITERAL1
+ADEON_USER LITERAL1
+ADEON_HOST LITERAL1
+
+SHORT_HASH_LENGTH LITERAL1
+MSG_BUFFER_LENGTH LITERAL1
+LIST_ITEM_LENGTH LITERAL1
