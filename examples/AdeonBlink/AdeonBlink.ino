@@ -1,6 +1,6 @@
 /**
  *  
- *  @brief This example demonstrates switching a LED on or off by the incoming SMS message in the 
+ * @brief This example demonstrates switching a LED on or off by the incoming SMS message in the 
  * Adeon format. 
  * 
  * For simplicity, real incoming SMS message(s) from real sender(s) is substituted with 
