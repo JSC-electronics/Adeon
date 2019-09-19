@@ -44,7 +44,7 @@ const char* testMsg1 = "02606: WaterPump = 123;OpenDoor = 1;OpenGate = 0;AirCond
 const char* param1Name = "OpenGate";
 const char* param2Name = "OpenDoor";
 const char* param3Name = "Pump";
-const char* param4Name = "AirConditioning";
+const char* param4Name = "AirCondition";
 
 Adeon adeon;
 
@@ -86,6 +86,11 @@ void setup() {
     userTest();
     paramTest();
     numOfItems();
+
+    // set incomming message sender number and text
+    strcpy(pnBuf, pn3);
+    strcpy(msgBuf, testMsg1);
+
     processMsg();
 }
 
@@ -105,10 +110,6 @@ void setDefaultValues(void) {
     strcpy(param2, param2Name);
     strcpy(param3, param3Name);
     strcpy(param4, param4Name);
-
-    // set incomming message sender number and text
-    strcpy(pnBuf, sender4pn);
-    strcpy(msgBuf, testMsg1);
 }
 
 void numOfItems() {
@@ -134,7 +135,7 @@ void userTest() {
     char* tmpStr;
     //add users with ADMIN, USER or HOST rights
     adeon.addUser(pn1, ADEON_ADMIN);
-    adeon.addUser(pn2, ADEON_HOST);
+    adeon.addUser(pn2, ADEON_ADMIN);
     adeon.addUser(pn3, ADEON_ADMIN);
     adeon.addUser(pn4, ADEON_USER);
     
@@ -196,9 +197,11 @@ void paramTest() {
     adeon.addParam(param1, 1);
     adeon.addParam(param2, 2);
     adeon.addParam(param4, 4);
+    adeon.setParamAccess(param4, ADEON_HOST);
     
     //add parameter with callback
     adeon.addParamWithCallback(callbackFunction, param3, 3);
+    adeon.setParamAccess(param3, ADEON_USER);
     
     //edit parameter name
     tmpStr = adeon.editParamName(param3, "WaterPump");
@@ -237,7 +240,7 @@ void processMsg() {
         if (adeon.isUserInAdeon(pnBuf)) {
             Serial.println("PHONE NUMBER IS AUTHORIZED");
             //parameters are parsed and their values are saved into list
-            adeon.parseBuf(msgBuf);
+            adeon.parseBuf(msgBuf, adeon.getUserRightsLevel(pnBuf));
             adeon.printParams();
         }
         else {
