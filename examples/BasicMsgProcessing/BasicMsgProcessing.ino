@@ -68,6 +68,7 @@ void setup() {
     adeon.addParam(param1Name, 1);
     adeon.addParam(param2Name, 0);
     adeon.addParam(param3Name, 0);
+    adeon.setParamAccess(param3Name, ADEON_USER);
     adeon.addParam(param4Name, 0);
     adeon.printParams();
 
@@ -123,7 +124,7 @@ void processMsg() {
         if (adeon.isUserInAdeon(pnBuf)) {
             Serial.println("PHONE NUMBER IS AUTHORIZED");
             //parameters are parsed and their values are saved into list
-            adeon.parseBuf(msgBuf);
+            adeon.parseBuf(msgBuf, adeon.getUserRightsLevel(pnBuf));
             adeon.printParams();
         }
         else {
