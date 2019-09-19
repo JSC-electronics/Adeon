@@ -123,6 +123,16 @@ void Adeon::addParamWithCallback(void (*callback)(uint16_t), const char* pName, 
 }
 
 /**
+ * @brief Set parameter access rights.
+ * @param pName is pointer to name constant string.
+ * @param access is variable which defines user access level to parameter.
+Default access rights for parameter is level ADMIN
+ */
+void Adeon::setParamAccess(const char* pName, uint8_t access){
+    paramList->setParamAccess(paramList->findItem(pName), access);
+}
+
+/**
  * @brief Delete parameter from Adeon.
  * @param pName is pointer to name constant string.
  */
@@ -194,7 +204,8 @@ void Adeon::printParams(){
  * 4. Parse parameter names and values until all received data has been processed.
  * 5. Set Adeon state to <code>true</code>.
  */
-void Adeon::parseBuf(char* pMsg){
+void Adeon::parseBuf(char* pMsg, uint8_t userGroup){
+    char* tmpName;
     if(strlen(pMsg) <= MSG_BUFFER_LENGTH && parser->isParserReady() && !paramList->isListEmpty()){
         _ready = false;
         memset(_msg, 0, sizeof(_msg));
@@ -202,8 +213,9 @@ void Adeon::parseBuf(char* pMsg){
         if(parser->isMsgValid()){
             while(parser->isNameAvailable()){
                 parser->parse();
-                if(isParamInAdeon(parser->getTmpName())){
-                    editParamValue(parser->getTmpName(), parser->getValue());
+                tmpName = parser->getTmpName();
+                if(isParamInAdeon(tmpName) && (getParamAccess(tmpName) >= userGroup)){
+                    editParamValue(tmpName, parser->getValue());
                 }
             }
         }
@@ -217,6 +229,14 @@ void Adeon::parseBuf(char* pMsg){
  */
 bool Adeon::isAdeonReady(){
     return _ready;
+}
+
+/**
+ * @brief Get parameter access rights.
+ * @param pName is pointer to name constant string.
+ */
+uint8_t Adeon::getParamAccess(char* pName){
+    return paramList->getParamAccess(paramList->findItem(pName));
 }
 
 /**
@@ -503,4 +523,21 @@ Adeon::ParameterList::ParameterList(){
 void Adeon::ParameterList::addItemWithCallback(const char* pId, uint16_t val, void (*callback)(uint16_t)){
     Item* pItem = addItem(pId, val);
     pItem->_pCallback = callback;
+}
+
+/**
+ * @brief Set parameter access rights.
+ * @param pItem is pointer to item object.
+ * @param access is variable which defines user access level to parameter.
+ */
+void Adeon::ParameterList::setParamAccess(Item* pItem, uint8_t access){
+    pItem->accessRights = access;
+}
+
+/**
+ * @brief Get parameter access rights.
+ * @param pItem is pointer to item object.
+ */
+uint8_t Adeon::ParameterList::getParamAccess(Item* pItem){
+    return pItem->accessRights;
 }

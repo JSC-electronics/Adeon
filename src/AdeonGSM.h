@@ -59,6 +59,7 @@ class Adeon {
 
         void addParam(const char* pName, uint16_t val = 1);
         void addParamWithCallback(void (*callback)(uint16_t), const char* pName, uint16_t val = 1);
+        void setParamAccess(const char* pName, uint8_t access);
         void deleteParam(const char* pName);
         char* editParamName(const char* pActualName, const char* pNewName);
         void editParamValue(const char* pName, uint16_t val = 1);
@@ -67,10 +68,12 @@ class Adeon {
         uint16_t getParamValue(const char* pName);
         void printParams();
 
-        void parseBuf(char* pMsg);
+        void parseBuf(char* pMsg, uint8_t userGroup);
         bool isAdeonReady();
     
     private:
+        uint8_t getParamAccess(char* pName); 
+
         char _msg[MSG_BUFFER_LENGTH];
         bool _ready = true; // indicator, that Adeon is ready to process new data
 
@@ -147,5 +150,7 @@ class Adeon {
         public:
             ParameterList();
             void addItemWithCallback(const char* pId, uint16_t val, void (*callback)(uint16_t));
+            void setParamAccess(Item* pItem, uint8_t access);
+            uint8_t getParamAccess(Item* pItem);
     };
 };
