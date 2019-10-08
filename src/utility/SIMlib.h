@@ -37,10 +37,10 @@ class GSM{
   public:
     GSM(SoftwareSerial* pGsmSerial);
     void begin();
-    void runGsm();
+    void checkGsmOutput();
     bool isNewMsgAvailable();
     char* getMsg();
-    char* getMsgPhone();
+    char* getPhoneNum();
 
   private:
     bool sendCommand(const char* cmd);

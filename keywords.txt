@@ -28,11 +28,18 @@ printParams	KEYWORD1
 parseBuf	KEYWORD1
 isAdeonReady	KEYWORD1
 
+begin		KEYWORD1 
+checkGsmOutput	KEYWORD1
+isNewMsgAvailable	KEYWORD1
+getMsg		KEYWORD1
+getPhoneNum	KEYWORD1
+
 #######################################
 # Instances (KEYWORD1)
 #######################################
 
 Adeon	KEYWORD1
+GSM 	KEYWORD1
 
 #######################################
 # Constants (LITERAL1)

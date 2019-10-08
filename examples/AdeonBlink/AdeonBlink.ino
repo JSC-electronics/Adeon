@@ -66,7 +66,7 @@ void loop() {
         if (adeon.isUserInAdeon(sender1pn)) {
             Serial.println("PHONE NUMBER IS AUTHORIZED");
             //parameters are parsed and their values are saved into list
-            adeon.parseBuf(msgBuf);
+            adeon.parseBuf(msgBuf, adeon.getUserRightsLevel(sender1pn));
             adeon.printParams();
         }
         else {

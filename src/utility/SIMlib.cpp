@@ -20,7 +20,7 @@
  * limitations under the License.
  */
 
-#include <GSM/SIMlib.h>
+#include "utility/SIMlib.h"
 
 /**
  * @brief Constructor for the class GSM.
@@ -40,7 +40,7 @@ If message is valid phone number and message text are parsed.
 When the message is processed, SMS is deleted from GSM buffer.
 If GSM buffer keeps more than 10 SMS, whole buffer will be deleted.
  */
-void GSM::runGsm(){
+void GSM::checkGsmOutput(){
     _pSerialHandler->periodicSerialCheck();
     //check if SMS is received
     if(_pSerialHandler->isRxBufferAvailable()){
@@ -86,7 +86,7 @@ char* GSM::getMsg(){
  * @brief Returns pointer to phone number buffer array.
  * @return _pTelBuffer is a pointer to an array.
  */
-char* GSM::getMsgPhone(){
+char* GSM::getPhoneNum(){
     return _pTelBuffer;
 }
 
@@ -97,16 +97,19 @@ char* GSM::getMsgPhone(){
 void GSM::begin(){
     while(sendCommand(basicCommand) != true){
         delay(1000);
+        Serial.println(F("GSM IS OFFLINE"));
     }
     Serial.println(F("GSM IS ONLINE"));
     delay(1000);
     while(sendCommand(gsmMode) != true){
         delay(1000);
+        Serial.println(F("CONFIG FAILED"));
     }
     Serial.println(F("GSM IS CONFIGURED"));
     delay(1000);
     while(sendCommand(plainTextMode) != true){
         delay(1000);
+        Serial.println(F("MSG SETTING FAILED"));
     }
     Serial.println(F("MSG SET TO TEXT"));
     delay(1000);

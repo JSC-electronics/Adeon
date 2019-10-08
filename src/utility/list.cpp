@@ -183,16 +183,16 @@ uint16_t ItemList::getItemVal(Item* pItem){
 void ItemList::printData(){
     if(Serial && !isListEmpty()){
         Item* pItem = _pHead;
-        Serial.println("*********************");
+        Serial.println(F("*********************"));
         while(pItem != nullptr){
-            Serial.print("LIST ITEM ID: ");
+            Serial.print(F("LIST ITEM ID: "));
             Serial.println(pItem->id);
-            Serial.print("LIST ITEM VALUE: ");
+            Serial.print(F("LIST ITEM VALUE: "));
             Serial.println(pItem->value);
             Serial.println();
             pItem = pItem->getPointToNextItem();
         }
-        Serial.println("*********************");
+        Serial.println(F("*********************"));
     }
 }
 
