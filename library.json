@@ -1,7 +1,7 @@
 {
   "name": "Adeon",
   "keywords": "arduino, adeon, gsm",
-  "description": "Adeon is an Arduino library for managing users' phone numbers and received parameters. Parameters are received via incoming SMS from authorised (defined users) phone numbers. The library is designed to use with Adeon Android app. As input string the library requires an SMS in Adeon app format. Incoming SMS is secured by hash which guarantees validy of a message. The changing values of parameters provide controlling peripheral devices and modules which are connected to the Arduino based on input string.",
+  "description": "Adeon is an Arduino library for managing phone numbers and received parameters of users. Parameters are received via incoming SMS from authorised (defined users) phone numbers. The library is designed to use with Adeon Android app. As input string the library requires an SMS in Adeon app format. Incoming SMS is secured by hash which guarantees validity of a message. The changing values of parameters provide controlling peripheral devices and modules which are connected to the Arduino based on input string.",
   "repository":
   {
     "type": "git",
