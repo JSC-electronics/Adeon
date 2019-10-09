@@ -1,7 +1,7 @@
 /**
- *  
- * For simplicity, real incoming SMS message(s) from real sender(s) is substituted with 
- * constant string(s).
+ * @brief This example demonstrates basic processing of the incoming SMS message in the 
+ * Adeon format. The target is to set the values of defined parameters via SMS in case that
+ * the SMS has been sent by authorized user (from authorized phone number).
  * 
  *  Copyright (c) 2019 JSC electronics
  *
