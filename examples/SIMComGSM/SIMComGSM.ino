@@ -22,16 +22,14 @@
 #include <SoftwareSerial.h>
 #include <AdeonGSM.h>
 #include <utility/SIMlib.h>
-#include <SimpleRelay.h>
 
-#define RELAY_PIN 6
+#define RELAY 6
 #define RX 10
 #define TX 11
 
 SoftwareSerial gsmSerial = SoftwareSerial(RX, TX);
 GSM* gsm;
 Adeon adeon;
-SimpleRelay relay = SimpleRelay(RELAY_PIN, true /* inverted switching logic*/ );
 
 char* msgBuf; 
 char* pnBuf; 
@@ -62,7 +60,7 @@ void callbackRel(uint16_t val){
     Serial.println(val);
     Serial.println();
 
-    (val == 0) ? relay.on() : relay.off(); 
+    (val == 0) ? digitalWrite(RELAY, HIGH) : digitalWrite(RELAY, LOW); 
 }
 
 void userInit(){
@@ -107,9 +105,9 @@ void setup() {
     delay(200);
 
     pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(RELAY, OUTPUT);
     digitalWrite(LED_BUILTIN, LOW);
-
-    relay.off();
+    digitalWrite(RELAY, HIGH);
 
     gsm = new GSM(&gsmSerial);
     gsm->begin();
