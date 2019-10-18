@@ -31,6 +31,7 @@ isParamInAdeon	KEYWORD2
 getNumOfParams	KEYWORD2
 getParamValue	KEYWORD2
 printParams	KEYWORD2
+setParamAccess  KEYWORD2
 
 parseBuf	KEYWORD1
 isAdeonReady	KEYWORD1
