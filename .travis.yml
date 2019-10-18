@@ -10,9 +10,6 @@ branches:
     - gh-pages
 before_install:
   - sudo apt-get install -y doxygen graphviz
-  - apt install arduino
-install:
-  - arduino --install-library "SimpleRelay"
 script:
    - bundle install
    - bundle exec arduino_ci_remote.rb
