@@ -25,9 +25,12 @@
 
 #define getName(var)  #var 
 
-#define RELAY 6
-#define RX 10
-#define TX 11
+#define RED     6
+#define GREEN   7
+#define BLUE  8
+
+#define RX      10
+#define TX      11
 
 SoftwareSerial gsmSerial = SoftwareSerial(RX, TX);
 GSM* gsm;
@@ -39,8 +42,10 @@ char pnHost[LIST_ITEM_LENGTH];
 char pnUser[LIST_ITEM_LENGTH];
 char pnAdmin[LIST_ITEM_LENGTH];
 
-char parRelay[LIST_ITEM_LENGTH];
-char parClose[LIST_ITEM_LENGTH];
+char parRed[LIST_ITEM_LENGTH];
+char parGreen[LIST_ITEM_LENGTH];
+char parBlue[LIST_ITEM_LENGTH];
+char parAutoOff[LIST_ITEM_LENGTH];
 char parAccess[LIST_ITEM_LENGTH];
 
 char* msgBuf; 
@@ -48,8 +53,11 @@ char* pnBuf;
 
 void setStrings();
 void numOfItems();
-void callbackRel(uint16_t val);
+void callbackRed(uint16_t val);
+void callbackGreen(uint16_t val);
+void callbackBlue(uint16_t val);
 void accessManagement();
+void changeAccess(uint16_t val, const char* param);
 void setupTimer();
 void userInit();
 void paramInit();
@@ -61,9 +69,11 @@ void setStrings(){
     strcpy(pnUser, "420222222222");
     strcpy(pnHost, "420333333333");
 
-    strcpy(parRelay, "RELAY");
-    strcpy(parClose, "CLOSE");
-    strcpy(parAccess, "ACCESS");
+    strcpy(parRed, "R");
+    strcpy(parGreen, "G");
+    strcpy(parBlue, "B");
+    strcpy(parAutoOff, "AUTOOFF"); //AUTO OFF
+    strcpy(parAccess, "ACCESS"); //
 }
 
 void numOfItems(){
@@ -75,28 +85,83 @@ void numOfItems(){
   Serial.println();
 }
 
-void callbackRel(uint16_t val){
+void callbackRed(uint16_t val){
     //callback function which is called if value of parameter is edited
-    Serial.print(F("REL VAL: "));
+    Serial.print(F("RED LED VAL: "));
     Serial.println(val);
 
-    (val == 0) ? digitalWrite(RELAY, HIGH) : digitalWrite(RELAY, LOW); 
+    (val > 255) ? analogWrite(RED, 255) : analogWrite(RED, val); 
 }
 
-void accessManagement(){
-    Serial.print("PARAM SET TO ");
-    uint16_t val = adeon.getParamValue(parAccess);
-    if(val == 0){
-        adeon.setParamAccess(parRelay, ADEON_ADMIN);
+void callbackGreen(uint16_t val){
+    //callback function which is called if value of parameter is edited
+    Serial.print(F("GREEN LED VAL: "));
+    Serial.println(val);
+
+    (val > 255) ? analogWrite(GREEN, 255) : analogWrite(GREEN, val); 
+}
+
+void callbackBlue(uint16_t val){
+    //callback function which is called if value of parameter is edited
+    Serial.print(F("BLUE LED VAL: "));
+    Serial.println(val);
+
+    (val > 255) ? analogWrite(BLUE, 255) : analogWrite(BLUE, val); 
+}
+
+void accessManagement(uint16_t val){
+    /*
+    10 - RED ADMIN
+    11 - RED USER
+    12 - RED HOST 
+
+    20 - GREEN ADMIN
+    21 - GREEN USER
+    22 - GREEN HOST 
+
+    30 - BLUE ADMIN
+    31 - BLUE USER
+    32 - BLUE HOST 
+    */
+
+    uint8_t colorSelect = val / 10;
+
+    switch(colorSelect){
+        case 1:
+        changeAccess(val % 10, parRed);
+        break;
+        case 2:
+        changeAccess(val % 10, parGreen);
+        break;
+        case 3:
+        changeAccess(val % 10, parBlue);
+        break;
+        default:
+        Serial.println(F("UNKNOWN PARAM"));
+        break;
+    }
+}
+
+void changeAccess(uint16_t val, const char* param){
+    Serial.print(F("PARAM "));
+    Serial.print(param);
+    Serial.print(F(" SET TO: "));
+    switch(val){
+        case 0:
+        adeon.setParamAccess(param, ADEON_ADMIN);
         Serial.println(getName(ADEON_ADMIN));
-    }
-    else if(val == 1){
-        adeon.setParamAccess(parRelay, ADEON_USER);
+        break;
+        case 1:
+        adeon.setParamAccess(param, ADEON_USER);
         Serial.println(getName(ADEON_USER));
-    }
-    else{
-        adeon.setParamAccess(parRelay, ADEON_HOST);
+        break;
+        case 2:
+        adeon.setParamAccess(param, ADEON_HOST);
         Serial.println(getName(ADEON_HOST));
+        break;
+        default:
+        Serial.println(F("NO CHANGE"));
+        break;
     }
 }
 
@@ -119,12 +184,19 @@ void setupTimer1() {
 }
 
 ISR(TIMER1_COMPA_vect) {
-    if(adeon.getParamValue(parRelay) == 1){
-        if(adeon.getParamValue(parClose) > counter){
+    uint16_t r = adeon.getParamValue(parRed);
+    uint16_t g = adeon.getParamValue(parGreen);
+    uint16_t y = adeon.getParamValue(parBlue);
+    uint16_t autoOffTime = adeon.getParamValue(parAutoOff);
+
+    if((r != 0 || g != 0 || y != 0) && autoOffTime != 0){
+        if(autoOffTime > counter){
             counter++;
         }
         else{
-            adeon.editParamValue(parRelay, 0);
+            adeon.editParamValue(parRed, 0);
+            adeon.editParamValue(parGreen, 0);
+            adeon.editParamValue(parBlue, 0);
             adeon.printParams();
         }
     }
@@ -143,8 +215,10 @@ void userInit(){
 
 void paramInit(){
     //add parameters
-    adeon.addParamWithCallback(callbackRel, parRelay, 0);
-    adeon.addParam(parClose, 5);
+    adeon.addParamWithCallback(callbackRed, parRed, 0);
+    adeon.addParamWithCallback(callbackGreen, parGreen, 0);
+    adeon.addParamWithCallback(callbackBlue, parBlue, 0);
+    adeon.addParam(parAutoOff, 10);
     adeon.addParamWithCallback(accessManagement, parAccess, 0);
     adeon.printParams();
 }
@@ -175,10 +249,13 @@ void setup() {
     gsmSerial.begin(9600);
     delay(200);
 
-    pinMode(LED_BUILTIN, OUTPUT);
-    pinMode(RELAY, OUTPUT);
-    digitalWrite(LED_BUILTIN, LOW);
-    digitalWrite(RELAY, HIGH);
+    pinMode(RED, OUTPUT);
+    pinMode(GREEN, OUTPUT);
+    pinMode(BLUE, OUTPUT);
+
+    digitalWrite(RED, LOW);
+    digitalWrite(GREEN, LOW);
+    digitalWrite(BLUE, LOW);
 
     gsm = new GSM(&gsmSerial);
     gsm->begin();
