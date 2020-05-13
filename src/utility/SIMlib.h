@@ -21,7 +21,12 @@
  */
 
 #include <Arduino.h>
-#include <SoftwareSerial.h>
+
+//#define SW_SERIAL
+
+#ifdef SW_SERIAL
+  #include <SoftwareSerial.h>
+#endif
 
 constexpr static auto RX_BUFFER = 255;
 constexpr static auto MSG_LENGTH = 147;
@@ -35,7 +40,11 @@ class GSM{
     class SerialHandler;
 
   public:
+  #ifdef SW_SERIAL
     GSM(SoftwareSerial* pGsmSerial);
+  #else
+    GSM(HardwareSerial* pGsmSerial);
+  #endif
     void begin();
     void checkGsmOutput();
     bool isNewMsgAvailable();
@@ -58,8 +67,8 @@ class GSM{
     const char* deleteSms = "AT+CMGD=";
     const char* incomingSms = "CMTI";
 
-    GSM::ParserGSM* _pParser;
-    GSM::SerialHandler* _pSerialHandler;
+    ParserGSM* _pParser;
+    SerialHandler* _pSerialHandler;
 
     char* _pMsgBuffer;
     char* _pTelBuffer;
@@ -70,7 +79,7 @@ class GSM{
 
   class ParserGSM{
     public:
-      ParserGSM(GSM::SerialHandler* pSerialHandler, bool* newMsg, uint8_t* lastMsgIndex);
+      ParserGSM(SerialHandler* pSerialHandler, bool* newMsg, uint8_t* lastMsgIndex);
       bool getResponse(const char* searchedChar);
       bool identifyIncomingMsg(const char* command);
       char* makeDynamicCmd(const char* command, uint8_t id);
@@ -83,7 +92,7 @@ class GSM{
       uint8_t GetIndex(char* buffer, char startSym);
       const char* incomingSms = "CMTI";
 
-      GSM::SerialHandler* _pSerialHandler;
+      SerialHandler* _pSerialHandler;
 
       bool* _pNewMsg;
       char* _pRxBuffer = nullptr;
@@ -95,7 +104,11 @@ class GSM{
 
   class SerialHandler{
     public:
+  #ifdef SW_SERIAL
     SerialHandler(SoftwareSerial* pGsmSerial);
+  #else
+    SerialHandler(HardwareSerial* pGsmSerial);
+  #endif
     void serialWrite(const char* command);
     void periodicSerialCheck(); //get num of received bytes
     void feedbackSerialCheck();
@@ -104,7 +117,11 @@ class GSM{
     void setRxBufferAvailability(bool var);
     void serialRead(uint8_t incomingBytes);
 
-    SoftwareSerial* _pGsmSerial;
+    #ifdef SW_SERIAL
+      SoftwareSerial* _pGsmSerial;
+    #else
+      HardwareSerial* _pGsmSerial;
+    #endif
 
     bool _periodicReading = true; //peridical serial monitor reading, can be used in timer or loop as well
     bool _rxBufferAvailable = false;

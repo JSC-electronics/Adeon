@@ -22,6 +22,7 @@
 
 #include "utility/SIMlib.h"
 
+#ifdef SW_SERIAL
 /**
  * @brief Constructor for the class GSM.
  * @param pGsmSerial is a pointer to SoftwareSerial object
@@ -32,6 +33,18 @@ GSM::GSM(SoftwareSerial* pGsmSerial){
     _pParser = new ParserGSM(_pSerialHandler, &_newMsg, &_lastMsgIndex);
     _pTelBuffer = _pParser->getPointTelBuf();   
 }
+#else 
+/**
+ * @brief Constructor for the class GSM.
+ * @param pGsmSerial is a pointer to HardwareSerial object
+ * Creat instances of parser and serial hanfler.
+ */
+GSM::GSM(HardwareSerial* pGsmSerial){
+    _pSerialHandler = new SerialHandler(pGsmSerial);
+    _pParser = new ParserGSM(_pSerialHandler, &_newMsg, &_lastMsgIndex);
+    _pTelBuffer = _pParser->getPointTelBuf();   
+}
+#endif
 
 /**
  * @brief Checks for incoming SMS.
@@ -285,6 +298,7 @@ uint8_t GSM::ParserGSM::GetIndex(char* buffer, char startSym){
     return (uint8_t)atoi(tmpStr);
 }
 
+#ifdef SW_SERIAL
 /**
  * @brief Constructor for the nested class SerialHandler.
  * @param pGsmSerial is a pointer to SoftwareSerial object
@@ -292,7 +306,15 @@ uint8_t GSM::ParserGSM::GetIndex(char* buffer, char startSym){
 GSM::SerialHandler::SerialHandler(SoftwareSerial* pGsmSerial){
     _pGsmSerial = pGsmSerial;
 }
-
+#else
+/**
+ * @brief Constructor for the nested class SerialHandler.
+ * @param pGsmSerial is a pointer to HardwareSerial object
+ */
+GSM::SerialHandler::SerialHandler(HardwareSerial* pGsmSerial){
+    _pGsmSerial = pGsmSerial;
+}
+#endif
 /**
  * @brief Writes command to serial.
  * @param command is a pointer to command constant
