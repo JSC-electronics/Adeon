@@ -204,7 +204,7 @@ void GSM::ParserGSM::getMsg(){
     if(_msgBuffer != nullptr){
         free(_msgBuffer);
     }
-    _msgBuffer = (char*)malloc(strlen(tmpStr) - strlen(endMsgPointer));
+    _msgBuffer = (char*)malloc(strlen(tmpStr) - strlen(endMsgPointer) + 1);
     while(&tmpStr[counter] != endMsgPointer){
         _msgBuffer[counter] = tmpStr[counter];
         counter++;
@@ -397,7 +397,7 @@ void GSM::SerialHandler::serialRead(uint8_t incomingBytes){
     if(_rxBuffer != nullptr){
         free(_rxBuffer);
     }
-    _rxBuffer = (char*)malloc(incomingBytes);
+    _rxBuffer = (char*)malloc(incomingBytes + 1);
     _pGsmSerial->readBytes(_rxBuffer, incomingBytes);
     _rxBuffer[incomingBytes] = '\0';
     _rxBufferAvailable = true;
