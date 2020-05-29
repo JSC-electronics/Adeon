@@ -3,18 +3,22 @@
 
 #define DEFAULT_PIN         1234
 
+#define PIN_LEN             4
+#define ADMIN_PN_LEN        12
+
 class AdeonConfig{
     private:
-        char* _pin[4];
-        char* _adminPn[12];
+        const char* defaultPin = "1234";
+        char _pin[4];
+        char _adminPn[12];
         bool _firstConfig = false;
         Adeon *_pAdeon;
 
     public:
-        AdeonConfig(Adeon *_pAdeon);
-        AdeonConfig(Adeon *_pAdeon, const char* pin);
-        AdeonConfig(Adeon *_pAdeon, const char* pin, const char* adminPn);
+        AdeonConfig(Adeon *pAdeon);
         void begin();
+        void begin(const char* pin);
+        void begin(const char* pin, const char* adminPn);
 
         bool isFirstConfig();
         bool isConfigMsg();
@@ -33,6 +37,6 @@ class AdeonConfig{
         void setAdmin();
         void setNewUser();
         void setUserRights();
-        
+
         void deleteUser();
 };
