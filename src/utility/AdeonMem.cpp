@@ -11,7 +11,7 @@ bool AdeonMem::isConfigAvailable(){
 			return false;
 		}
 	}
-	_numOfUsers = readNumOfUsers();
+	_numOfUsers = getNumOfUsers();
 	memset(_freeIndexBuffer, 0, FREE_INDEX_BUF_LEN);
 	return true;
 }
@@ -29,7 +29,7 @@ uint8_t AdeonMem::searchUser(const char* userPn){
 	return NOT_FOUND;
 }
 
-uint8_t AdeonMem::readNumOfUsers(){
+uint8_t AdeonMem::getNumOfUsers(){
 	uint8_t num = EEPROM.read(IDX_NUM_USERS);
 	if(num == BLANK_CELL) return 0;
 	return num;
@@ -39,14 +39,25 @@ char* AdeonMem::readUserRecord(uint8_t numOfUserOrder){
 	if(numOfUserOrder > MAX_NUM_OF_USERS){
 		uint8_t i = 0;
 		uint8_t idx = IDX_DATA_PART + numOfUserOrder * USER_RECORD_LEN;
-		setReturnBuffer(USER_RECORD_LEN);
-		for(i = 0; i < USER_RECORD_LEN; i++){
+		setReturnBuffer(USER_RECORD_LEN - 1);
+		for(i = 0; i < USER_RECORD_LEN - 1; i++){
 			_returnBuffer[i] = EEPROM.read(idx + i);
 		}
 		_returnBuffer[i] = '\0';
 		return _returnBuffer;
 	}
 	return nullptr;
+}
+
+uint8_t AdeonMem::readUserRights(uint8_t numOfUserOrder){
+	if(numOfUserOrder > MAX_NUM_OF_USERS){
+		uint8_t idx = IDX_DATA_PART + numOfUserOrder * USER_RECORD_LEN;
+		char tmp = EEPROM.read(idx + USER_RECORD_LEN - 1);
+		_rightsBuffer[0] = tmp;
+		_rightsBuffer[1] = '\0';
+		return atoi(_rightsBuffer);
+	}
+	return NOT_FOUND;
 }
 
 char* AdeonMem::readPin(){

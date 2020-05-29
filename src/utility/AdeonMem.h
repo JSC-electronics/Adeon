@@ -24,6 +24,7 @@ class AdeonMem
 		char *_returnBuffer;
 		uint8_t _numOfUsers = 0;
 		uint8_t _freeIndexBuffer[FREE_INDEX_BUF_LEN];
+		char _rightsBuffer[1];
 
 	public:
 		AdeonMem();
@@ -32,8 +33,9 @@ class AdeonMem
 
 		uint8_t searchUser(const char* userPn);
 
-		uint8_t readNumOfUsers();
+		uint8_t getNumOfUsers();
 		char* readUserRecord(uint8_t numOfUserOrder);
+		uint8_t readUserRights(uint8_t numOfUserOrder);
 		char* readPin();
 		char* readAdminPn();
 

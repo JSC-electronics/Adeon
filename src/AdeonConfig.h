@@ -9,6 +9,7 @@
 class AdeonConfig{
     private:
         const char* defaultPin = "1234";
+        const char configSymbol = '#';
         char _pin[4];
         char _adminPn[12];
         bool _firstConfig = false;
@@ -21,22 +22,17 @@ class AdeonConfig{
         void begin(const char* pin, const char* adminPn);
 
         bool isFirstConfig();
-        bool isConfigMsg();
-        bool isMsgFromAdmin();
+        bool isConfigMsg(char* pMsg);
+        bool isMsgFromAdmin(char* pPn);
 
-        void waitForConfig();
         void parseBuf(char* pMsg);
 
         void setDefaultConfig();
 
     private:
-        bool isConfigEmpty();
-        void readConfigFromEeprom();
+        void readUsersFromEeprom();
         
-        void setPin();
-        void setAdmin();
-        void setNewUser();
-        void setUserRights();
-
-        void deleteUser();
+        void setPin(const char* pin);
+        void setAdmin(const char* adminPn);
+        void setUserRights(const char* userPn, uint8_t rights);
 };

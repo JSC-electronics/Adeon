@@ -69,7 +69,8 @@ void AdeonConfig::begin(const char* pin, const char* adminPn){
         }
         if(strlen(adminPn) <= ADMIN_PN_LEN){
             strcpy(_adminPn, adminPn);
-            adeonMem.updateAdmin(_adminPn);
+            adeonMem.updateAdmin(_adminPn);//přesunout funkci do Adeon addUser()
+            _pAdeon->addUser(_adminPn, ADEON_ADMIN);
             _firstConfig = true;
         }
         else{
@@ -80,19 +81,17 @@ void AdeonConfig::begin(const char* pin, const char* adminPn){
 }
 
 bool AdeonConfig::isFirstConfig(){
-
+    return _firstConfig;
 }
 
-bool AdeonConfig::isConfigMsg(){
-
+bool AdeonConfig::isConfigMsg(char* pMsg){
+    if(pMsg[0] == configSymbol) return true;
+    return false;
 }
 
-bool AdeonConfig::isMsgFromAdmin(){
-    
-}
-
-void AdeonConfig::waitForConfig(){
-
+bool AdeonConfig::isMsgFromAdmin(char* pPn){
+    if(strcmp(pPn, _adminPn) == 0) return true;
+    return false;
 }
 
 void AdeonConfig::parseBuf(char* pMsg){
@@ -100,33 +99,41 @@ void AdeonConfig::parseBuf(char* pMsg){
 }
 
 void AdeonConfig::setDefaultConfig(){
-
+    _firstConfig = false;
+    adeonMem.deleteDatabase();
+    strcpy(_pin, defaultPin);
+    memset(_adminPn, 0, ADMIN_PN_LEN);
+    adeonMem.updatePin(_pin);
 }
 
-bool AdeonConfig::isConfigEmpty(){
-
+//move to AdeonGSM.h
+void AdeonConfig::readUsersFromEeprom(){
+    uint8_t numOfUsers = adeonMem.getNumOfUsers();
+    if(adeonMem.getNumOfUsers() > 0){
+        for (uint8_t i = 0; i < numOfUsers; i++){
+            _pAdeon->addUser(adeonMem.readUserRecord(i), adeonMem.readUserRights(i));
+        }
+    }
 }
 
-void AdeonConfig::readConfigFromEeprom(){
-
+void AdeonConfig::setPin(const char* pin){
+    if(strlen(pin) == PIN_LEN){
+        strcpy(_pin, pin);
+        adeonMem.updatePin(_pin);
+    }
 }
 
-void AdeonConfig::setPin(){
-
+void AdeonConfig::setAdmin(const char* adminPn){
+     if(strlen(adminPn) <= ADMIN_PN_LEN){
+        strcpy(_adminPn, adminPn);
+        adeonMem.updateUsers(_adminPn, ADEON_ADMIN); //přesunout funkci do Adeon addUser()
+        _pAdeon->addUser(_adminPn, ADEON_ADMIN);
+     }
 }
 
-void AdeonConfig::setAdmin(){
-
-}
-
-void AdeonConfig::setNewUser(){
-
-}
-
-void AdeonConfig::deleteUser(){
-
-}
-
-void AdeonConfig::setUserRights(){
-
+void AdeonConfig::setUserRights(const char* userPn, uint8_t rights){
+    if(rights == (ADEON_ADMIN || ADEON_USER || ADEON_HOST)){
+        adeonMem.updateUsersRights(userPn, rights); //přesunout funkci do Adeon addUser()
+        _pAdeon->editUserRights(userPn, rights);
+    }
 }
