@@ -27,6 +27,7 @@
 #include <Arduino.h>
 #include "utility/MD5.h"
 #include "utility/list.h"
+#include <utility/AdeonMem.h>
 
 #define ADEON_ADMIN 1
 #define ADEON_USER 2
