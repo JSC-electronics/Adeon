@@ -5,6 +5,7 @@
 
 #define PIN_LEN             4
 #define PN_LEN              12
+#define RIGHTS_LEN          1
 
 enum FC{
     NONE = 0,
@@ -33,7 +34,6 @@ class AdeonConfig{
 
         bool _firstConfig = false;
         char* _msgBuf;
-        char* _parsBuf;
 
         Adeon *_pAdeon;
         FC _function = NONE;
