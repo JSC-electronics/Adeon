@@ -49,7 +49,7 @@ class Adeon {
 
     public:
         Adeon();
-        void addUser(const char* pTelNum, uint16_t userGroup = 1);
+        void addUser(const char* pTelNum, uint16_t userGroup = 1, bool disableEepromSaving = false);
         void deleteUser(const char* pTelNum);
         char* editUserPhone(const char* pActualTelNum, const char* pNewTelNum);
         void editUserRights(const char* pTelNum, uint16_t userGroup = 1);
@@ -72,11 +72,13 @@ class Adeon {
         void parseBuf(char* pMsg, uint8_t userGroup);
         bool isAdeonReady();
     
+        void setEepromEnabled(bool state);
     private:
         uint8_t getParamAccess(char* pName); 
 
         char _msg[MSG_BUFFER_LENGTH];
         bool _ready = true; // indicator, that Adeon is ready to process new data
+        bool _eepromEna = false;
 
         Adeon::Parser* parser;
         Adeon::UserList* userList;

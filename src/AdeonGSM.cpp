@@ -37,8 +37,9 @@ Adeon::Adeon(){
  * @param pTelNum is pointer to telephone number constant string.
  * @param userGroup is variable which defines user rights.
  */
-void Adeon::addUser(const char* pTelNum, uint16_t userGroup){
+void Adeon::addUser(const char* pTelNum, uint16_t userGroup, bool disableEepromSaving){
     userList->addItem(pTelNum, userGroup);
+    if(_eepromEna && !disableEepromSaving) adeonMem.updateUsers(pTelNum, (uint8_t)userGroup);
 }
 
 /**
@@ -65,6 +66,7 @@ char* Adeon::editUserPhone(const char* pActualTelNum, const char* pNewTelNum){
  */
 void Adeon::editUserRights(const char* pTelNum, uint16_t userGroup){
     userList->editItemVal(userList->findItem(pTelNum), userGroup);
+    if(_eepromEna)adeonMem.updateUsersRights(pTelNum, (uint8_t)userGroup);
 }
 
 /**
@@ -229,6 +231,14 @@ void Adeon::parseBuf(char* pMsg, uint8_t userGroup){
  */
 bool Adeon::isAdeonReady(){
     return _ready;
+}
+
+/**
+ * @brief Enable eeprom reading/writing.
+ * @return _eepromEna <code>true</code> if Adeon is ready, <code>false</code> otherwise.
+ */
+void Adeon::setEepromEnabled(bool state){
+    _eepromEna = state;
 }
 
 /**
