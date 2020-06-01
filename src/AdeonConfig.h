@@ -4,7 +4,7 @@
 #define DEFAULT_PIN         1234
 
 #define PIN_LEN             4
-#define ADMIN_PN_LEN        12
+#define PN_LEN              12
 
 enum FC{
     NONE = 0,
@@ -33,6 +33,7 @@ class AdeonConfig{
 
         bool _firstConfig = false;
         char* _msgBuf;
+        char* _parsBuf;
 
         Adeon *_pAdeon;
         FC _function = NONE;
@@ -46,16 +47,20 @@ class AdeonConfig{
         bool isFirstConfig();
         bool isMsgFromAdmin(char* pPn);
 
-        void readConfigMsg(char* pMsg);
+        void readConfigMsg(char* pMsg, char* userPn);
 
         void setDefaultConfig();
 
     private:
         //parsing
-        void parseMsg();
+        void parseMsg(char* userPn);
         bool isPinValid();
         void selectFunction(char* pMsg);
 
+        void parseNewPin(char* pMsg);
+        void parseUser(char* pMsg);
+
+        bool isNumber(char* pStr, uint8_t n);
         bool isConfigMsg(char* pMsg);
         void readUsersFromEeprom();
         

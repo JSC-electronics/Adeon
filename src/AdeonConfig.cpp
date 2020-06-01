@@ -51,7 +51,7 @@ void AdeonConfig::begin(const char* pin, const char* adminPn){
         else{
             strcpy(_pin, adeonMem.readPin());
         }
-        if(strlen(adminPn) <= ADMIN_PN_LEN){
+        if(strlen(adminPn) <= PN_LEN){
             strcpy(_adminPn, adminPn);
         }
         else{
@@ -67,7 +67,7 @@ void AdeonConfig::begin(const char* pin, const char* adminPn){
         else{
             strcpy(_pin, defaultPin);
         }
-        if(strlen(adminPn) <= ADMIN_PN_LEN){
+        if(strlen(adminPn) <= PN_LEN){
             strcpy(_adminPn, adminPn);
             adeonMem.updateAdmin(_adminPn);//přesunout funkci do Adeon addUser()
             _pAdeon->addUser(_adminPn, ADEON_ADMIN);
@@ -94,41 +94,70 @@ bool AdeonConfig::isMsgFromAdmin(char* pPn){
     return false;
 }
 
-void AdeonConfig::readConfigMsg(char* pMsg){
+void AdeonConfig::readConfigMsg(char* pMsg, char* userPn){
     if(strlen(pMsg) <= MSG_BUFFER_LENGTH && isConfigMsg(pMsg)){
         _msgBuf = (char*) malloc (strlen(pMsg));
         strcpy(_msgBuf, pMsg);
-        parseMsg();
+        parseMsg(userPn);
         free(_msgBuf);
     }
 }
 
-void AdeonConfig::parseMsg(){
+void AdeonConfig::parseMsg(char* userPn){
     char* tmp;
     if(isPinValid()){
         selectFunction(strchr(_msgBuf, separatorSymbol) + 1);
     }
     
-    if(_function != NONE){
-        
+    if(_function != NONE){        
         switch(_function){
             NONE:
                 break;
             ADMIN_INIT:
+                if(!_firstConfig){
+                    setAdmin(userPn);
+                    _firstConfig = !_firstConfig;
+                }
                 break;
             NEW_USER:
+
                 break;
             DELETE_USER:
+
                 break;
             NEW_PIN:
+                parseNewPin(strrchr(_msgBuf, separatorSymbol) + 1);
                 break;
             DELETE_ALL:
+                setDefaultConfig();
                 break;
             default:
                 break;
         }
         _function = NONE;
     }
+}
+
+void AdeonConfig::parseNewPin(char* pMsg){
+    if(isNumber(pMsg, PIN_LEN)){
+        _parsBuf = (char*) malloc (PIN_LEN);
+        strncpy(_parsBuf, pMsg, PIN_LEN);
+        setPin(_parsBuf);
+        free(_parsBuf);
+    }
+}
+
+void AdeonConfig::parseUser(char* pMsg){
+
+}
+
+bool isNumber(char* pStr, uint8_t n){
+    for (uint8_t i = 0; i < n; i++){
+        if(pStr[i] < 0x30 || pStr[i] > 0x39){
+            return false;
+        }
+    }
+    return true;
 }
 
 bool AdeonConfig::isPinValid(){
@@ -163,7 +192,7 @@ void AdeonConfig::setDefaultConfig(){
     _firstConfig = false;
     adeonMem.deleteDatabase();
     strcpy(_pin, defaultPin);
-    memset(_adminPn, 0, ADMIN_PN_LEN);
+    memset(_adminPn, 0, PN_LEN);
     adeonMem.updatePin(_pin);
 }
 
@@ -184,8 +213,9 @@ void AdeonConfig::setPin(const char* pin){
 }
 
 void AdeonConfig::setAdmin(const char* adminPn){
-     if(strlen(adminPn) <= ADMIN_PN_LEN){
+     if(strlen(adminPn) <= PN_LEN){
         strcpy(_adminPn, adminPn);
+        adeonMem.updateAdmin(_adminPn);
         _pAdeon->addUser(_adminPn, ADEON_ADMIN);
      }
 }
