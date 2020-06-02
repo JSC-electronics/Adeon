@@ -58,7 +58,8 @@ class AdeonConfig{
         void selectFunction(char* pMsg);
 
         void parseNewPin(char* pMsg);
-        void parseUser(char* pMsg);
+        void parseNewUser(char* pMsg);
+        void parseDeleteUser(char* pMsg);
 
         bool isNumber(char* pStr, uint8_t n);
         bool isConfigMsg(char* pMsg);

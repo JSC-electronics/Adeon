@@ -120,10 +120,10 @@ void AdeonConfig::parseMsg(char* userPn){
                 }
                 break;
             NEW_USER:
-                parseUser(strchr(_msgBuf, endSymbol) + 1);
+                parseNewUser(strchr(_msgBuf, endSymbol) + 1);
                 break;
             DELETE_USER:
-
+                parseDeleteUser(strchr(_msgBuf, endSymbol) + 1);
                 break;
             NEW_PIN:
                 parseNewPin(strchr(_msgBuf, endSymbol) + 1);
@@ -140,35 +140,87 @@ void AdeonConfig::parseMsg(char* userPn){
 
 void AdeonConfig::parseNewPin(char* pMsg){
     char* _parsBuf;
-    if(isNumber(pMsg, PIN_LEN)){
-        _parsBuf = (char*) malloc (PIN_LEN);
+    if (isNumber(pMsg, PIN_LEN)) {
+        _parsBuf = (char*)malloc(sizeof(char) * PIN_LEN + 1);
         strncpy(_parsBuf, pMsg, PIN_LEN);
         setPin(_parsBuf);
         free(_parsBuf);
     }
 }
 
-void AdeonConfig::parseUser(char* pMsg){
-    char* pn, *rights;
-    char* tmp;
+void AdeonConfig::parseNewUser(char* pMsg){
+    char* pn = nullptr;
+    char* rights = nullptr;
+    char* tmp = nullptr;
+    bool separatorDetected = false;
     uint8_t i;
-    if(pMsg != nullptr){
-        tmp = strrchr(pMsg, separatorSymbol);
-        pn = (char*) malloc (PN_LEN);
-        for(i = 0; i < PN_LEN; i++){
-            if(&pn[i] == tmp){
-                break;
-            }
+    tmp = strchr(pMsg, separatorSymbol) - 1;
+    pn = (char*)malloc(sizeof(char)*(PN_LEN + 1));
+    for (i = 0; i < PN_LEN; i++) {
+        pn[i] = pMsg[i];
+        if (&pMsg[i] == tmp) {
+            separatorDetected = true;
+            break;
         }
+    }
+    if (separatorDetected) {
+        pn[i + 1] = '\0';
+        separatorDetected = false;
+    }
+    else {
         pn[i] = '\0';
-        if(isNumber(pn, strlen(pn))){
-            rights = (char*) malloc (RIGHTS_LEN);
-            strncpy(tmp + 1, rights, RIGHTS_LEN);
+    }
+    if(isNumber(pn, strlen(pn))){
+        rights = (char*) malloc (sizeof(char) * RIGHTS_LEN + 1);
+        strncpy(rights, strchr(pMsg, separatorSymbol) + 1, RIGHTS_LEN);
+        if (isNumber(rights, RIGHTS_LEN)) {
             _pAdeon->addUser(pn, atoi(rights));
-            free(rights);
         }
-        free(pn);
-        return parseUser(strchr(tmp, endSymbol) + 1);
+        free(rights);
+    }
+    free(pn);
+    tmp = strchr(pMsg, endSymbol);
+    if (tmp != nullptr) {
+        tmp += 1;
+        return parseNewUser(tmp);
+    }
+}
+
+void AdeonConfig::parseDeleteUser(char* pMsg){
+    char* pn = nullptr;
+    char* tmp = nullptr;
+    uint8_t i;
+    bool separatorDetected = false;
+    tmp = strchr(pMsg, endSymbol);
+    if (tmp != NULL) {
+        tmp -= 1;
+    }
+    else {
+        tmp = &pMsg[PN_LEN - 1];
+    }
+    pn = (char*)malloc(sizeof(char) * (PN_LEN + 1));
+    for (i = 0; i < PN_LEN; i++) {
+        pn[i] = pMsg[i];
+        if (&pMsg[i] == tmp) {
+            separatorDetected = true;
+            break;
+        }
+    }
+    if (separatorDetected) {
+        pn[i + 1] = '\0';
+        separatorDetected = false;
+    }
+    else {
+        pn[i] = '\0';
+    }
+    if (isNumber(pn, strlen(pn))) {
+        _pAdeon->deleteUser(pn);
+    }
+    free(pn);
+    tmp = strchr(pMsg, endSymbol);
+    if (tmp != nullptr) {
+        tmp += 1;
+        return parseDeleteUser(tmp);
     }
 }
 
