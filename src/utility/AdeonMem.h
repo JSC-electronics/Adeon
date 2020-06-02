@@ -3,7 +3,7 @@
 
 #define EEPROM_LEN			1023 //bytes
 #define BLANK_CELL			0xFF //0xFF is value which means the cell is blank
-#define NOT_FOUND			0xFF
+#define NOT_FOUND			-1
 #define MAX_NUM_OF_USERS	77
 
 #define USER_RECORD_LEN		13 	//bytes
@@ -21,10 +21,9 @@
 class AdeonMem
 {
 	private:
-		char *_returnBuffer;
+		char* _returnBuffer;
 		uint8_t _numOfUsers = 0;
-		uint8_t _freeIndexBuffer[FREE_INDEX_BUF_LEN];
-		char _rightsBuffer[1];
+		uint8_t _freeIndexBuffer[MAX_NUM_OF_USERS];
 
 	public:
 		AdeonMem();
@@ -50,6 +49,7 @@ class AdeonMem
 	private:
 		void updateNumOfUsers(uint8_t numOfUsers);
 		void setReturnBuffer(uint8_t size);
+		bool isIdxInFreeBuffer(uint16_t idx);
 		void setIndexToFreeBuffer(uint8_t idx);
 
 		uint8_t getIndexFromFreeBuffer();

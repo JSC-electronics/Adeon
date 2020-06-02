@@ -141,7 +141,7 @@ void AdeonConfig::parseMsg(char* userPn){
 void AdeonConfig::parseNewPin(char* pMsg){
     char* _parsBuf;
     if (isNumber(pMsg, PIN_LEN)) {
-        _parsBuf = (char*)malloc(sizeof(char) * PIN_LEN + 1);
+        _parsBuf = (char*)malloc(sizeof(char) * (PIN_LEN + 1));
         strncpy(_parsBuf, pMsg, PIN_LEN);
         setPin(_parsBuf);
         free(_parsBuf);
@@ -171,7 +171,7 @@ void AdeonConfig::parseNewUser(char* pMsg){
         pn[i] = '\0';
     }
     if(isNumber(pn, strlen(pn))){
-        rights = (char*) malloc (sizeof(char) * RIGHTS_LEN + 1);
+        rights = (char*) malloc (sizeof(char) * (RIGHTS_LEN + 1));
         strncpy(rights, strchr(pMsg, separatorSymbol) + 1, RIGHTS_LEN);
         if (isNumber(rights, RIGHTS_LEN)) {
             _pAdeon->addUser(pn, atoi(rights));

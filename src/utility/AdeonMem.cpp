@@ -5,8 +5,10 @@ AdeonMem::AdeonMem(){
 }
 
 bool AdeonMem::isConfigAvailable(){
-	for(int i = 0; i < ADMIN_RECORD_LEN; i++){
-		if(EEPROM.read(IDX_ADMIN_PN + 0) == BLANK_CELL){
+	uint8_t val = 0;
+	for (int i = 0; i < ADMIN_RECORD_LEN; i++) {
+		val = EEPROM.read(IDX_ADMIN_PN + i);
+		if (val == BLANK_CELL || (val < 0x30 || val > 0x39)) {
 			deleteDatabase();
 			return false;
 		}
@@ -19,11 +21,11 @@ bool AdeonMem::isConfigAvailable(){
 uint8_t AdeonMem::searchUser(const char* userPn){
 	uint8_t j, i;
 	char tmp;
-	for(i = 0; i < _numOfUsers; i++){
-		for(j = 0; j < USER_RECORD_LEN; j++){
+	for (i = 0; i < _numOfUsers; i++) {
+		for (j = 0; j < USER_RECORD_LEN - 1; j++) {
 			tmp = EEPROM.read(IDX_DATA_PART + i * USER_RECORD_LEN + j);
-			if(tmp != userPn[j]) break;
-			if(j == USER_RECORD_LEN - 1) return IDX_DATA_PART + i * USER_RECORD_LEN;
+			if (tmp != userPn[j]) break;
+			if (j == USER_RECORD_LEN - 2) return IDX_DATA_PART + i * USER_RECORD_LEN;
 		}
 	}
 	return NOT_FOUND;
@@ -31,16 +33,19 @@ uint8_t AdeonMem::searchUser(const char* userPn){
 
 uint8_t AdeonMem::getNumOfUsers(){
 	uint8_t num = EEPROM.read(IDX_NUM_USERS);
-	if(num == BLANK_CELL) return 0;
+	if (num == BLANK_CELL) return 0;
 	return num;
 }
 
 char* AdeonMem::readUserRecord(uint8_t numOfUserOrder){
-	if(numOfUserOrder > MAX_NUM_OF_USERS){
+	if (numOfUserOrder < MAX_NUM_OF_USERS) {
+		while (isIdxInFreeBuffer(numOfUserOrder)) {
+			numOfUserOrder++;
+		}
 		uint8_t i = 0;
 		uint8_t idx = IDX_DATA_PART + numOfUserOrder * USER_RECORD_LEN;
 		setReturnBuffer(USER_RECORD_LEN - 1);
-		for(i = 0; i < USER_RECORD_LEN - 1; i++){
+		for (i = 0; i < USER_RECORD_LEN - 1; i++) {
 			_returnBuffer[i] = EEPROM.read(idx + i);
 		}
 		_returnBuffer[i] = '\0';
@@ -50,12 +55,12 @@ char* AdeonMem::readUserRecord(uint8_t numOfUserOrder){
 }
 
 uint8_t AdeonMem::readUserRights(uint8_t numOfUserOrder){
-	if(numOfUserOrder > MAX_NUM_OF_USERS){
+	if (numOfUserOrder < MAX_NUM_OF_USERS) {
+		while (isIdxInFreeBuffer(numOfUserOrder)) {
+			numOfUserOrder++;
+		}
 		uint8_t idx = IDX_DATA_PART + numOfUserOrder * USER_RECORD_LEN;
-		char tmp = EEPROM.read(idx + USER_RECORD_LEN - 1);
-		_rightsBuffer[0] = tmp;
-		_rightsBuffer[1] = '\0';
-		return atoi(_rightsBuffer);
+		return EEPROM.read(idx + USER_RECORD_LEN - 1);
 	}
 	return NOT_FOUND;
 }
@@ -63,7 +68,7 @@ uint8_t AdeonMem::readUserRights(uint8_t numOfUserOrder){
 char* AdeonMem::readPin(){
 	uint8_t i = 0;
 	setReturnBuffer(PIN_RECORD_LEN);
-	for(i = 0; i < PIN_RECORD_LEN; i++){
+	for (i = 0; i < PIN_RECORD_LEN; i++) {
 		_returnBuffer[i] = EEPROM.read(IDX_PIN + i);
 	}
 	_returnBuffer[i] = '\0';
@@ -73,7 +78,7 @@ char* AdeonMem::readPin(){
 char* AdeonMem::readAdminPn(){
 	uint8_t i = 0;
 	setReturnBuffer(ADMIN_RECORD_LEN);
-	for(i = 0; i < ADMIN_RECORD_LEN; i++){
+	for (i = 0; i < ADMIN_RECORD_LEN; i++) {
 		_returnBuffer[i] = EEPROM.read(IDX_ADMIN_PN + i);
 	}
 	_returnBuffer[i] = '\0';
@@ -81,13 +86,13 @@ char* AdeonMem::readAdminPn(){
 }
 
 void AdeonMem::updatePin(const char* pin){
-	for(uint8_t i = 0; i < PIN_RECORD_LEN; i++){
+	for (uint8_t i = 0; i < PIN_RECORD_LEN; i++) {
 		EEPROM.update(IDX_PIN + i, pin[i]);
 	}
 }
 
 void AdeonMem::updateAdmin(const char* adminPn){
-	for(uint8_t i = 0; i < ADMIN_RECORD_LEN; i++){
+	for (uint8_t i = 0; i < ADMIN_RECORD_LEN; i++) {
 		EEPROM.update(IDX_ADMIN_PN + i, adminPn[i]);
 	}
 } 
@@ -95,14 +100,14 @@ void AdeonMem::updateAdmin(const char* adminPn){
 void AdeonMem::updateUsers(const char* userPn, uint8_t rights){
 	uint8_t i;
 	uint8_t freeIdx = getIndexFromFreeBuffer();
-	if(freeIdx > 0){
-		for(i = 0; i < USER_RECORD_LEN - 1; i++){
-			EEPROM.update(freeIdx + USER_RECORD_LEN * _numOfUsers + i, userPn[i]);
+	if (freeIdx > 0) {
+		for (i = 0; i < USER_RECORD_LEN - 1; i++) {
+			EEPROM.update(freeIdx + i, userPn[i]);
 		}
-		EEPROM.update(freeIdx + USER_RECORD_LEN * _numOfUsers + i, rights);
+		EEPROM.update(freeIdx + i, rights);
 	}
-	else{
-		for(i = 0; i < USER_RECORD_LEN - 1; i++){
+	else {
+		for (i = 0; i < USER_RECORD_LEN - 1; i++) {
 			EEPROM.update(IDX_DATA_PART + USER_RECORD_LEN * _numOfUsers + i, userPn[i]);
 		}
 		EEPROM.update(IDX_DATA_PART + USER_RECORD_LEN * _numOfUsers + i, rights);
@@ -112,18 +117,22 @@ void AdeonMem::updateUsers(const char* userPn, uint8_t rights){
 }
 
 void AdeonMem::updateUsersRights(const char* userPn, uint8_t rights){
-	uint8_t idx = searchUser(userPn);
-	EEPROM.update(idx + USER_RECORD_LEN, rights);
+	int16_t idx = searchUser(userPn);
+	if (idx >= 0) {
+		EEPROM.update(idx + USER_RECORD_LEN - 1, rights);
+	}
 }
 
 void AdeonMem::deleteUser(const char* userPn){
-	uint8_t idx = searchUser(userPn);
-	for(uint8_t i = 0; i < USER_RECORD_LEN; i++){
-		EEPROM.update(idx + i, BLANK_CELL);
+	int16_t idx = searchUser(userPn);
+	if (idx >= 0) {
+		for (uint8_t i = 0; i < USER_RECORD_LEN; i++) {
+			EEPROM.update(idx + i, BLANK_CELL);
+		}
+		setIndexToFreeBuffer(idx);
+		_numOfUsers--;
+		updateNumOfUsers(_numOfUsers);
 	}
-	setIndexToFreeBuffer(idx);
-	_numOfUsers--;
-	updateNumOfUsers(_numOfUsers);
 }
 
 void AdeonMem::deleteDatabase(){
@@ -137,15 +146,13 @@ void AdeonMem::updateNumOfUsers(uint8_t numOfUsers){
 }
 
 void AdeonMem::setReturnBuffer(uint8_t size){
-	if(_returnBuffer == nullptr) free(_returnBuffer);
-	_returnBuffer = (char*) malloc (size + 1);
+	if (_returnBuffer == nullptr) free(_returnBuffer);
+	_returnBuffer = (char*)malloc(sizeof(char) * (size + 1));
 }
 
 void AdeonMem::setIndexToFreeBuffer(uint8_t idx){
-	//improvement – recalculate index
-	for (uint8_t i = 0; i < FREE_INDEX_BUF_LEN; i++){
-		//if buffer is overflow – index keeps empty whole time
-		if(_freeIndexBuffer[i] == 0){
+	for (uint8_t i = 0; i < FREE_INDEX_BUF_LEN; i++) {
+		if (_freeIndexBuffer[i] == 0) {
 			_freeIndexBuffer[i] = idx;
 			break;
 		}
@@ -154,13 +161,23 @@ void AdeonMem::setIndexToFreeBuffer(uint8_t idx){
 
 uint8_t AdeonMem::getIndexFromFreeBuffer(){
 	uint8_t idx;
-	for (uint8_t i = FREE_INDEX_BUF_LEN; i > 0; i--){
-		if(_freeIndexBuffer[i] != 0){
+	for (uint8_t i = 0; i < FREE_INDEX_BUF_LEN; i++) {
+		if (_freeIndexBuffer[i] != 0) {
 			idx = _freeIndexBuffer[i];
 			_freeIndexBuffer[i] = 0;
 			return idx;
 		}
 	}
 	return 0;
+}
+
+bool AdeonMem::isIdxInFreeBuffer(uint16_t idx) {
+	idx = IDX_DATA_PART + (idx * IDX_NUM_USERS);
+	for (uint8_t i = 0; i < FREE_INDEX_BUF_LEN; i++) {
+		if (_freeIndexBuffer[i] == idx) {
+			return true;
+		}
+	}
+	return false;
 }
 
