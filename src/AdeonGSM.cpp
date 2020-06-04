@@ -48,6 +48,7 @@ void Adeon::addUser(const char* pTelNum, uint16_t userGroup, bool disableEepromS
  */
 void Adeon::deleteUser(const char* pTelNum){
     userList->deleteItem(userList->findItem(pTelNum));
+    if(_eepromEna) adeonMem.deleteUser(pTelNum);
 }
 
 /**

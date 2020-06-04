@@ -11,8 +11,6 @@
 #define ADMIN_RECORD_LEN	12	//bytes
 #define USERS_N_RECORD_LEN	1	//bytes
 
-#define FREE_INDEX_BUF_LEN	10
-
 #define IDX_DATA_PART		20 	//bytes
 #define IDX_PIN				0
 #define IDX_ADMIN_PN		4
@@ -22,15 +20,13 @@ class AdeonMem
 {
 	private:
 		char* _returnBuffer;
-		uint8_t _numOfUsers = 0;
-		uint8_t _freeIndexBuffer[MAX_NUM_OF_USERS];
 
 	public:
 		AdeonMem();
 
 		bool isConfigAvailable();
 
-		uint8_t searchUser(const char* userPn);
+		int16_t searchUser(const char* userPn);
 
 		uint8_t getNumOfUsers();
 		char* readUserRecord(uint8_t numOfUserOrder);
@@ -44,15 +40,13 @@ class AdeonMem
 		void updateUsersRights(const char* userPn, uint8_t rights);
 		
 		void deleteUser(const char* userPn);
+		void orderMemory(uint16_t idx);
 		void deleteDatabase();
+		void printEeprom(uint16_t start, uint16_t count);
 
 	private:
 		void updateNumOfUsers(uint8_t numOfUsers);
 		void setReturnBuffer(uint8_t size);
-		bool isIdxInFreeBuffer(uint16_t idx);
-		void setIndexToFreeBuffer(uint8_t idx);
-
-		uint8_t getIndexFromFreeBuffer();
 };
 
 static AdeonMem adeonMem;

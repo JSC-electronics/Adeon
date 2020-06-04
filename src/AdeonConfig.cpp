@@ -315,6 +315,7 @@ void AdeonConfig::readUsersFromEeprom(){
 }
 
 void AdeonConfig::setPin(const char* pin){
+    Serial.println(pin);
     if(strlen(pin) == PIN_LEN){
         strncpy(_pin, pin, PIN_LEN);
         adeonMem.updatePin(_pin);
