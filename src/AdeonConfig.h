@@ -29,8 +29,8 @@ class AdeonConfig{
         const char *newPin = "NP";
         const char *deleteAll = "DA";
 
-        char _pin[4];
-        char _adminPn[12];
+        char _pin[PIN_LEN + 1];
+        char _adminPn[PN_LEN + 1];
 
         bool _firstConfig = false;
         char* _msgBuf;
@@ -46,8 +46,10 @@ class AdeonConfig{
 
         bool isFirstConfig();
         bool isMsgFromAdmin(char* pPn);
+        bool isConfigMsg(char* pMsg);
 
         void readConfigMsg(char* pMsg, char* userPn);
+        void readUsersFromEeprom();
 
         void setDefaultConfig();
 
@@ -62,8 +64,6 @@ class AdeonConfig{
         void parseDeleteUser(char* pMsg);
 
         bool isNumber(char* pStr, uint8_t n);
-        bool isConfigMsg(char* pMsg);
-        void readUsersFromEeprom();
         
         void setPin(const char* pin);
         void setAdmin(const char* adminPn);

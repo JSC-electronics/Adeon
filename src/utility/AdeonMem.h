@@ -15,8 +15,8 @@
 
 #define IDX_DATA_PART		20 	//bytes
 #define IDX_PIN				0
-#define IDX_ADMIN_PN		1
-#define IDX_NUM_USERS		13
+#define IDX_ADMIN_PN		4
+#define IDX_NUM_USERS		16
 
 class AdeonMem
 {
