@@ -52,6 +52,7 @@ class AdeonConfig{
         void readUsersFromEeprom();
 
         void setDefaultConfig();
+        void deleteAdmin();
 
     private:
         //parsing

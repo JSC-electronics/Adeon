@@ -13,7 +13,6 @@ bool AdeonMem::isConfigAvailable(){
 			return false;
 		}
 	}
-	printEeprom(0, 19);
 	return true;
 }
 
@@ -82,20 +81,16 @@ void AdeonMem::updatePin(const char* pin){
 	for (uint8_t i = 0; i < PIN_RECORD_LEN; i++) {
 		EEPROM.update(IDX_PIN + i, pin[i]);
 	}
-	printEeprom(0, 19);
 }
 
 void AdeonMem::updateAdmin(const char* adminPn){
 	for (uint8_t i = 0; i < ADMIN_RECORD_LEN; i++) {
 		EEPROM.update(IDX_ADMIN_PN + i, adminPn[i]);
 	}
-	printEeprom(0, 19);
 } 
 
 void AdeonMem::updateUsers(const char* userPn, uint8_t rights){
 	int16_t idx = searchUser(userPn);
-	Serial.print("IDX");
-	Serial.print(idx);
 	if (idx < 0) {
 		uint8_t i;
 		for (i = 0; i < USER_RECORD_LEN - 1; i++) {
@@ -104,7 +99,6 @@ void AdeonMem::updateUsers(const char* userPn, uint8_t rights){
 		EEPROM.update(IDX_DATA_PART + USER_RECORD_LEN * getNumOfUsers() + i, rights);
 		updateNumOfUsers(getNumOfUsers() + 1);
 	}
-	printEeprom(20, 120);
 }
 
 void AdeonMem::updateUsersRights(const char* userPn, uint8_t rights){
@@ -123,14 +117,12 @@ void AdeonMem::deleteUser(const char* userPn){
 		orderMemory(idx);
 		updateNumOfUsers(getNumOfUsers() - 1);
 	}
-	printEeprom(20, 120);
 }
 
 void AdeonMem::orderMemory(uint16_t idx){
 	uint16_t nextIdx;
 	if(EEPROM.read(idx + USER_RECORD_LEN) != BLANK_CELL){
 		nextIdx = idx + USER_RECORD_LEN;
-		Serial.println(nextIdx);
 		for(uint8_t i = 0; i < USER_RECORD_LEN; i++){
 			EEPROM.update(idx + i, EEPROM.read(nextIdx + i));
 			EEPROM.update(nextIdx + i, BLANK_CELL);
@@ -143,11 +135,9 @@ void AdeonMem::deleteDatabase(){
 	for(int i = 0; i < EEPROM_LEN; i++){
 		EEPROM.update(i, BLANK_CELL);
 	}
-	printEeprom(20, 120);
 }
 
 void AdeonMem::printEeprom(uint16_t start, uint16_t count){
-	Serial.println("X");
 	Serial.println(getNumOfUsers());
 	for(int i = start; i < count; i++){
 		Serial.print(EEPROM.read(i) - 0x30, HEX);

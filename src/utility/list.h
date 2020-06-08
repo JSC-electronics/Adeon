@@ -36,6 +36,7 @@ class ItemList {
     public:      
       Item* addItem(const char* pId, uint16_t val);
       void deleteItem(Item* pItem);
+      void deleteHead();
       char* editItemId(Item* pItem, const char* pNewId);
 	    void editItemVal(Item* pItem, uint16_t val);
       Item* findItem(const char* pId);

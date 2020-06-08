@@ -52,6 +52,13 @@ void Adeon::deleteUser(const char* pTelNum){
 }
 
 /**
+ * @brief Delete whole Adeon list.
+ */
+void Adeon::deleteList(){
+    userList->deleteHead();
+}
+
+/**
  * @brief Edit user telephone number.
  * @param pActualTelNum is pointer to actual telephone number constant string.
  * @param pNewTelNum is pointer to new telephone number constant string.

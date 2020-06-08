@@ -92,8 +92,6 @@ bool AdeonConfig::isConfigMsg(char* pMsg){
 }
 
 bool AdeonConfig::isMsgFromAdmin(char* pPn){
-    Serial.println(strncmp(pPn, _adminPn, PN_LEN));
-    Serial.println(_adminPn);
     if(strncmp(pPn, _adminPn, PN_LEN) == 0){
         Serial.println(F("ADMIN PN OK"));
         return true;
@@ -107,7 +105,15 @@ bool AdeonConfig::isMsgFromAdmin(char* pPn){
 void AdeonConfig::readConfigMsg(char* pMsg, char* userPn){
     if(strlen(pMsg) <= MSG_BUFFER_LENGTH){
         _msgBuf = (char*) malloc (sizeof(char*) * (strlen(pMsg) + 1));
+
+        //delete last semicolon
+        char* tmp = strrchr(pMsg, ';');
+        tmp[0] = '\0';
+
+        Serial.println(pMsg);
+
         strcpy(_msgBuf, pMsg);
+        Serial.println(_msgBuf);
         parseMsg(userPn);
         free(_msgBuf);
     }
@@ -127,34 +133,44 @@ void AdeonConfig::parseMsg(char* userPn){
             case NONE:
                 break;
             case ADMIN_INIT:
-                Serial.println(F("CONFIG: ADMIN_INIT"));
                 if(!_firstConfig){
                     setAdmin(userPn);
                     _firstConfig = !_firstConfig;
                 }
+                else{
+                    Serial.println(F("CONFIG NOT ALLOWED"));
+                }
                 break;
             case NEW_USER:
                 if(_firstConfig){
-                    Serial.println(F("CONFIG: NEW_USER"));
                     parseNewUser(strchr(_msgBuf, endSymbol) + 1);
+                }
+                else{
+                    Serial.println(F("CONFIG NOT ALLOWED"));
                 }
                 break;
             case DELETE_USER:
                 if(_firstConfig){
-                    Serial.println(F("CONFIG: DELETE_USER"));
                     parseDeleteUser(strchr(_msgBuf, endSymbol) + 1);
+                }
+                else{
+                    Serial.println(F("CONFIG NOT ALLOWED"));
                 }
                 break;
             case NEW_PIN:
                 if(_firstConfig){
-                    Serial.println(F("CONFIG: NEW_PIN"));
                     parseNewPin(strchr(_msgBuf, endSymbol) + 1);
+                }
+                else{
+                    Serial.println(F("CONFIG NOT ALLOWED"));
                 }
                 break;
             case DELETE_ALL:
                 if(_firstConfig){
-                    Serial.println(F("CONFIG: DEFAULT SETTING"));
                     setDefaultConfig();
+                }
+                else{
+                    Serial.println(F("CONFIG NOT ALLOWED"));
                 }
                 break;
             default:
@@ -166,11 +182,8 @@ void AdeonConfig::parseMsg(char* userPn){
 
 void AdeonConfig::parseNewPin(char* pMsg){
     char* _parsBuf;
-    if (isNumber(pMsg, PIN_LEN)) {
-        _parsBuf = (char*)malloc(sizeof(char) * (PIN_LEN + 1));
-        strncpy(_parsBuf, pMsg, PIN_LEN);
-        setPin(_parsBuf);
-        free(_parsBuf);
+    if (isNumber(pMsg, PIN_LEN) && strlen(pMsg) == PIN_LEN) {
+        setPin(pMsg);
     }
 }
 
@@ -242,6 +255,9 @@ void AdeonConfig::parseDeleteUser(char* pMsg){
         pn[i] = '\0';
     }
     if (isNumber(pn, strlen(pn))) {
+        if(isMsgFromAdmin(pn)){
+            deleteAdmin();
+        }
         Serial.print(F("USER "));
         Serial.print(pn);
         Serial.println(F(" DELETED"));
@@ -302,7 +318,14 @@ void AdeonConfig::setDefaultConfig(){
     strncpy(_pin, defaultPin, PIN_LEN);
     memset(_adminPn, 0, PN_LEN);
     adeonMem.updatePin(_pin);
+    _pAdeon->deleteList();
     Serial.println(F("CONFIG SET TO DEFAULT"));
+}
+
+void AdeonConfig::deleteAdmin(){
+    _firstConfig = false;
+    memset(_adminPn, 0xFF, sizeof(char) * (PN_LEN + 1));
+    adeonMem.updateAdmin(_adminPn);
 }
 
 void AdeonConfig::readUsersFromEeprom(){
@@ -315,13 +338,10 @@ void AdeonConfig::readUsersFromEeprom(){
 }
 
 void AdeonConfig::setPin(const char* pin){
-    Serial.println(pin);
-    if(strlen(pin) == PIN_LEN){
-        strncpy(_pin, pin, PIN_LEN);
-        adeonMem.updatePin(_pin);
-        Serial.print(F("NEW PIN: "));
-        Serial.println(_pin);
-    }
+    strncpy(_pin, pin, PIN_LEN);
+    adeonMem.updatePin(_pin);
+    Serial.print(F("NEW PIN: "));
+    Serial.println(_pin);
 }
 
 void AdeonConfig::setAdmin(const char* adminPn){
