@@ -74,6 +74,7 @@ class Adeon {
         bool isAdeonReady();
     
         void setEepromEnabled(bool state);
+        void setParamValue(const char* pName, uint16_t val);
     private:
         uint8_t getParamAccess(char* pName); 
 

@@ -216,6 +216,12 @@ void ItemList::printData(){
     }
 }
 
+void ItemList::setItemVal(Item* pItem, uint16_t val){
+    if(pItem != nullptr){
+        pItem->value = val;
+    }
+}
+
 /**
  * @brief Constructor for nested class Item.
  * 
@@ -263,6 +269,7 @@ ItemList::Item* ItemList::Item::getPointToPrevItem(){
  * @param pSrc which is a pointer to source string
  */
 void ItemList::Item::saveId(const char* pSrc){
-    memset(id, 0, sizeof(id));
-    strcpy(id, pSrc);
+    id = (char*) malloc (sizeof(char) * (strlen(pSrc) + 1));
+    strncpy(id, pSrc, strlen(pSrc));
+    id[strlen(pSrc)] = '\0';
 }

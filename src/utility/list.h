@@ -46,6 +46,7 @@ class ItemList {
       uint8_t getNumOfItems();
       uint16_t getItemVal(Item* pItem);
       void printData();
+      void setItemVal(Item* pItem, uint16_t val);
 
     protected:
       Item* _pHead = nullptr;
@@ -61,7 +62,7 @@ class ItemList {
           Item* getPointToPrevItem();
           void saveId(const char* pSrc);
 
-          char id[LIST_ITEM_LENGTH];
+          char* id;
           uint16_t value = 0;
           uint8_t accessRights = 1;
           void (*_pCallback)(uint16_t) = nullptr;

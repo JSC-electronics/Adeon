@@ -249,6 +249,10 @@ void Adeon::setEepromEnabled(bool state){
     _eepromEna = state;
 }
 
+void Adeon::setParamValue(const char* pName, uint16_t val){
+    paramList->setItemVal(paramList->findItem(pName), val);
+}
+
 /**
  * @brief Get parameter access rights.
  * @param pName is pointer to name constant string.

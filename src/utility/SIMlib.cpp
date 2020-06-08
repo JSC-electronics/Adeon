@@ -323,6 +323,7 @@ void GSM::SerialHandler::serialWrite(const char* command){
     _periodicReading = false;
     _pGsmSerial->println(command);
     _pGsmSerial->flush();
+    delay(250);
     _periodicReading = true;
 }
 
