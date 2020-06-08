@@ -110,10 +110,7 @@ void AdeonConfig::readConfigMsg(char* pMsg, char* userPn){
         char* tmp = strrchr(pMsg, ';');
         tmp[0] = '\0';
 
-        Serial.println(pMsg);
-
         strcpy(_msgBuf, pMsg);
-        Serial.println(_msgBuf);
         parseMsg(userPn);
         free(_msgBuf);
     }
