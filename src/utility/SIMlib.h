@@ -22,10 +22,24 @@
 
 #include <Arduino.h>
 
-//#define SW_SERIAL
+#if defined(ARDUINO_AVR_MEGA2560)
+    #define HW_SERIAL
+#elif defined(ARDUINO_AVR_MICRO)       
+    #define SW_SERIAL
+#elif defined(ARDUINO_AVR_MINI)       
+    #define SW_SERIAL
+#elif defined(ARDUINO_AVR_NANO)       
+    #define SW_SERIAL
+#elif defined(ARDUINO_AVR_UNO)       
+    #define SW_SERIAL
+#else
+    #error "Unknown board"
+#endif
 
 #ifdef SW_SERIAL
   #include <SoftwareSerial.h>
+  #define RX 10
+  #define TX 11
 #endif
 
 constexpr static auto RX_BUFFER = 255;
@@ -41,9 +55,10 @@ class GSM{
 
   public:
   #ifdef SW_SERIAL
-    GSM(SoftwareSerial* pGsmSerial);
+    GSM(uint8_t rx = RX, uint8_t tx = TX, long baud = 9600);
   #else
-    GSM(HardwareSerial* pGsmSerial);
+    GSM(long baud = 9600);
+    GSM(HardwareSerial* pGsmSerial, long baud = 9600);
   #endif
     void begin();
     void checkGsmOutput();

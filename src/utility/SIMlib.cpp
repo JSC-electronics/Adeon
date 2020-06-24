@@ -25,10 +25,12 @@
 #ifdef SW_SERIAL
 /**
  * @brief Constructor for the class GSM.
- * @param pGsmSerial is a pointer to SoftwareSerial object
+ * @param RX and TX pins, baudrate (default 9600)
  * Creat instances of parser and serial hanfler.
  */
-GSM::GSM(SoftwareSerial* pGsmSerial){
+GSM::GSM(uint8_t rx, uint8_t tx, long baud){
+    SoftwareSerial *pGsmSerial = new SoftwareSerial(rx, tx);
+    pGsmSerial->begin(baud);
     _pSerialHandler = new SerialHandler(pGsmSerial);
     _pParser = new ParserGSM(_pSerialHandler, &_newMsg, &_lastMsgIndex);
     _pTelBuffer = _pParser->getPointTelBuf();   
@@ -36,10 +38,23 @@ GSM::GSM(SoftwareSerial* pGsmSerial){
 #else 
 /**
  * @brief Constructor for the class GSM.
+ * @param baudrate for Serial2 (default 9600)
+ * Creat instances of parser and serial hanfler.
+ */
+GSM::GSM(long baud){
+    Serial2.begin(baud);
+    _pSerialHandler = new SerialHandler(&Serial2);
+    _pParser = new ParserGSM(_pSerialHandler, &_newMsg, &_lastMsgIndex);
+    _pTelBuffer = _pParser->getPointTelBuf();   
+}
+
+/**
+ * @brief Constructor for the class GSM.
  * @param pGsmSerial is a pointer to HardwareSerial object
  * Creat instances of parser and serial hanfler.
  */
-GSM::GSM(HardwareSerial* pGsmSerial){
+GSM::GSM(HardwareSerial* pGsmSerial, long baud){
+    Serial2.begin(baud);
     _pSerialHandler = new SerialHandler(pGsmSerial);
     _pParser = new ParserGSM(_pSerialHandler, &_newMsg, &_lastMsgIndex);
     _pTelBuffer = _pParser->getPointTelBuf();   

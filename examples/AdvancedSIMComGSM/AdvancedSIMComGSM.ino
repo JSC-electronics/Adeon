@@ -19,19 +19,17 @@
  */
 
 #include <Arduino.h>
-#include <SoftwareSerial.h>
 #include <AdeonGSM.h>
 #include <utility/SIMlib.h>
 
 #define getName(var)  #var 
 
 #define RELAY 6
-#define RX 10
-#define TX 11
 
-SoftwareSerial gsmSerial = SoftwareSerial(RX, TX);
-GSM* gsm;
-Adeon adeon;
+Adeon adeon = Adeon();
+//SoftwareSerial default setting – RX 10, TX 11, BAUD 9600
+//HardwareSerial default setting – Serial2, BAUD 9600
+GSM gsm = GSM();
 
 uint16_t counter = 0;
 
@@ -49,14 +47,14 @@ char* pnBuf;
 void setStrings();
 void numOfItems();
 void callbackRel(uint16_t val);
-void accessManagement();
+void accessManagement(uint16_t val);
 void setupTimer();
 void userInit();
 void paramInit();
 void processMsg();
 
 void setStrings(){
-	//ADD YOUR NUMBER IN HERE
+  //ADD YOUR NUMBER IN HERE
     strcpy(pnAdmin, "420111111111");
     strcpy(pnUser, "420222222222");
     strcpy(pnHost, "420333333333");
@@ -83,9 +81,8 @@ void callbackRel(uint16_t val){
     (val == 0) ? digitalWrite(RELAY, HIGH) : digitalWrite(RELAY, LOW); 
 }
 
-void accessManagement(){
+void accessManagement(uint16_t val){
     Serial.print("PARAM SET TO ");
-    uint16_t val = adeon.getParamValue(parAccess);
     if(val == 0){
         adeon.setParamAccess(parRelay, ADEON_ADMIN);
         Serial.println(getName(ADEON_ADMIN));
@@ -172,7 +169,6 @@ void processMsg(){
 void setup() {
     // Setup the Serial port. See http://arduino.cc/en/Serial/IfSerial
     Serial.begin(9600);
-    gsmSerial.begin(9600);
     delay(200);
 
     pinMode(LED_BUILTIN, OUTPUT);
@@ -180,8 +176,7 @@ void setup() {
     digitalWrite(LED_BUILTIN, LOW);
     digitalWrite(RELAY, HIGH);
 
-    gsm = new GSM(&gsmSerial);
-    gsm->begin();
+    gsm.begin();
 
     setStrings();
     userInit();
@@ -191,10 +186,10 @@ void setup() {
 }
 
 void loop() {
-    gsm->checkGsmOutput();
-    if(gsm->isNewMsgAvailable()){
-        pnBuf = gsm->getPhoneNum();
-        msgBuf = gsm->getMsg();
+    gsm.checkGsmOutput();
+    if(gsm.isNewMsgAvailable()){
+        pnBuf = gsm.getPhoneNum();
+        msgBuf = gsm.getMsg();
         processMsg();
     }
 }

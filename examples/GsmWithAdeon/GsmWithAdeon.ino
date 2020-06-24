@@ -23,7 +23,7 @@
 #include <AdeonGSM.h>
 #include <utility/SIMlib.h>
 
-#define RELAY 6
+#define RELAY 5
 #define RX 10
 #define TX 11
 
@@ -34,12 +34,21 @@ Adeon adeon;
 char* msgBuf; 
 char* pnBuf; 
 
-void numOfItems();
-void ledControl();
-void callbackRel(uint16_t val);
-void userInit();
-void paramInit();
-void processMsg();
+//these variables needs to be changed according to users preferences
+char sender1pn[LIST_ITEM_LENGTH]; 
+char sender2pn[LIST_ITEM_LENGTH]; 
+
+//parameter names of paramN variables must be identical with parameters names in incoming message - if not nothing going to happen
+char param1Name[LIST_ITEM_LENGTH]; 
+char param2Name[LIST_ITEM_LENGTH]; 
+
+void setStrings(){
+    strcpy(sender1pn, "420606771068");
+    strcpy(sender2pn, "420159753456");
+
+    strcpy(param1Name, "LED");
+    strcpy(param2Name, "REL");    
+}
 
 void numOfItems(){
   Serial.print(F("NUM OF USERS: "));
@@ -50,8 +59,13 @@ void numOfItems(){
   Serial.println();
 }
 
-void ledControl(){
-    (adeon.getParamValue("LED") == 0) ? digitalWrite(LED_BUILTIN, LOW) : digitalWrite(LED_BUILTIN, HIGH);
+void callbackLed(uint16_t val){
+    //callback function which is called if value of parameter is edited
+    Serial.print(F("LED VAL: "));
+    Serial.println(val);
+    Serial.println();
+
+    (val == 0) ? digitalWrite(LED_BUILTIN, LOW) : digitalWrite(LED_BUILTIN, HIGH); 
 }
 
 void callbackRel(uint16_t val){
@@ -65,16 +79,15 @@ void callbackRel(uint16_t val){
 
 void userInit(){
     //add users with ADMIN, USER or HOST rights
-    adeon.addUser("420123456789", ADEON_ADMIN);
-    adeon.addUser("420987654321", ADEON_HOST);
+    adeon.addUser(sender1pn, ADEON_ADMIN);
+    adeon.addUser(sender2pn, ADEON_HOST);
     adeon.printUsers();
 }
 
 void paramInit(){
     //add parameters
-    adeon.addParam("LED", 0);
-    adeon.addParamWithCallback(callbackRel, "RELAY", 0);
-    adeon.setParamAccess("RELAY", ADEON_USER);
+    adeon.addParamWithCallback(callbackLed, param1Name, 0);
+    adeon.addParamWithCallback(callbackRel, param2Name, 0);
     adeon.printParams();
 }
 
@@ -112,6 +125,7 @@ void setup() {
     gsm = new GSM(&gsmSerial);
     gsm->begin();
 
+    setStrings();
     userInit();
     paramInit();
     numOfItems();    
@@ -124,5 +138,4 @@ void loop() {
         msgBuf = gsm->getMsg();
         processMsg();
     }
-    ledControl();
 }
