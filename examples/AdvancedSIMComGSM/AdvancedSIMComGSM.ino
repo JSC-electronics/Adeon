@@ -27,8 +27,8 @@
 #define RELAY 6
 
 Adeon adeon = Adeon();
-//SoftwareSerial default setting – RX 10, TX 11, BAUD 9600
-//HardwareSerial default setting – Serial2, BAUD 9600
+//SoftwareSerial default setting – RX 10, TX 11, BAUD 9600 (Uno, Nano, Mini, Micro...)
+//HardwareSerial default setting – Serial2, BAUD 9600 (Mega 2560...)
 GSM gsm = GSM();
 
 uint16_t counter = 0;

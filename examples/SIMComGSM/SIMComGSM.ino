@@ -19,17 +19,15 @@
  */
 
 #include <Arduino.h>
-#include <SoftwareSerial.h>
 #include <AdeonGSM.h>
 #include <utility/SIMlib.h>
 
 #define RELAY 6
-#define RX 10
-#define TX 11
 
-SoftwareSerial gsmSerial = SoftwareSerial(RX, TX);
-GSM* gsm;
-Adeon adeon;
+Adeon adeon = Adeon();
+//SoftwareSerial default setting – RX 10, TX 11, BAUD 9600 (Uno, Nano, Mini, Micro...)
+//HardwareSerial default setting – Serial2, BAUD 9600 (Mega 2560...)
+GSM gsm = GSM();
 
 char* msgBuf; 
 char* pnBuf; 
@@ -101,7 +99,6 @@ void processMsg(){
 void setup() {
     // Setup the Serial port. See http://arduino.cc/en/Serial/IfSerial
     Serial.begin(9600);
-    gsmSerial.begin(9600);
     delay(200);
 
     pinMode(LED_BUILTIN, OUTPUT);
@@ -109,8 +106,7 @@ void setup() {
     digitalWrite(LED_BUILTIN, LOW);
     digitalWrite(RELAY, HIGH);
 
-    gsm = new GSM(&gsmSerial);
-    gsm->begin();
+    gsm.begin();
 
     userInit();
     paramInit();
@@ -118,10 +114,10 @@ void setup() {
 }
 
 void loop() {
-    gsm->checkGsmOutput();
-    if(gsm->isNewMsgAvailable()){
-        pnBuf = gsm->getPhoneNum();
-        msgBuf = gsm->getMsg();
+    gsm.checkGsmOutput();
+    if(gsm.isNewMsgAvailable()){
+        pnBuf = gsm.getPhoneNum();
+        msgBuf = gsm.getMsg();
         processMsg();
     }
     ledControl();
