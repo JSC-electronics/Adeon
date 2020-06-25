@@ -29,8 +29,23 @@
  * Creat instances of parser and serial hanfler.
  */
 GSM::GSM(uint8_t rx, uint8_t tx, long baud){
-    SoftwareSerial *pGsmSerial = new SoftwareSerial(rx, tx);
+    #ifdef ESP8266
+        SoftwareSerial *pGsmSerial = new SoftwareSerial(rx, tx, false, RX_BUF_SIZE, 0);
+    #else
+        SoftwareSerial *pGsmSerial = new SoftwareSerial(rx, tx);
+    #endif
     pGsmSerial->begin(baud);
+    _pSerialHandler = new SerialHandler(pGsmSerial);
+    _pParser = new ParserGSM(_pSerialHandler, &_newMsg, &_lastMsgIndex);
+    _pTelBuffer = _pParser->getPointTelBuf();   
+}
+
+/**
+ * @brief Constructor for the class GSM.
+ * @param pGsmSerial is a pointer to SoftwareSerial object
+ * Creat instances of parser and serial hanfler.
+ */
+GSM::GSM(SoftwareSerial* pGsmSerial){
     _pSerialHandler = new SerialHandler(pGsmSerial);
     _pParser = new ParserGSM(_pSerialHandler, &_newMsg, &_lastMsgIndex);
     _pTelBuffer = _pParser->getPointTelBuf();   
@@ -42,7 +57,11 @@ GSM::GSM(uint8_t rx, uint8_t tx, long baud){
  * Creat instances of parser and serial hanfler.
  */
 GSM::GSM(long baud){
-    Serial2.begin(baud);
+    #ifdef ESP32
+        Serial2.begin(BAUD_RATE, SERIAL_8N1, RX, TX);
+    #else
+        Serial2.begin(baud);
+    #endif
     _pSerialHandler = new SerialHandler(&Serial2);
     _pParser = new ParserGSM(_pSerialHandler, &_newMsg, &_lastMsgIndex);
     _pTelBuffer = _pParser->getPointTelBuf();   
@@ -53,8 +72,7 @@ GSM::GSM(long baud){
  * @param pGsmSerial is a pointer to HardwareSerial object
  * Creat instances of parser and serial hanfler.
  */
-GSM::GSM(HardwareSerial* pGsmSerial, long baud){
-    Serial2.begin(baud);
+GSM::GSM(HardwareSerial* pGsmSerial){
     _pSerialHandler = new SerialHandler(pGsmSerial);
     _pParser = new ParserGSM(_pSerialHandler, &_newMsg, &_lastMsgIndex);
     _pTelBuffer = _pParser->getPointTelBuf();   
@@ -337,6 +355,7 @@ GSM::SerialHandler::SerialHandler(HardwareSerial* pGsmSerial){
 void GSM::SerialHandler::serialWrite(const char* command){
     _periodicReading = false;
     _pGsmSerial->println(command);
+	_pGsmSerial->flush();
     delay(200);
     _periodicReading = true;
 }
@@ -411,8 +430,9 @@ void GSM::SerialHandler::setRxBufferAvailability(bool var){
 void GSM::SerialHandler::serialRead(uint8_t incomingBytes){
     if(_rxBuffer != nullptr){
         free(_rxBuffer);
+        _rxBuffer = nullptr;
     }
-    _rxBuffer = (char*)malloc(incomingBytes + 1);
+    _rxBuffer = (char*)malloc(sizeof(char) * (incomingBytes + 1));
     _pGsmSerial->readBytes(_rxBuffer, incomingBytes);
     _rxBuffer[incomingBytes] = '\0';
     _rxBufferAvailable = true;

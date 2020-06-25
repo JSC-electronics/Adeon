@@ -3,7 +3,7 @@
  * Adeon format. The target is to set the values of defined parameters via SMS in case that
  * the SMS has been sent by authorized user (from authorized phone number).
  * 
- *  Copyright (c) 2019 JSC electronics
+ *  Copyright (c) 2020 JSC electronics
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,30 @@
 #include <AdeonGSM.h>
 #include <utility/SIMlib.h>
 
-#define RELAY 6
+#if defined(ESP8266) //setup for ESP8266 boards
+    #define LED         2   //D4
+    #define RELAY       5   //D1
+    #define LED_ON      LOW
+    #define LED_OFF     HIGH       
+#elif defined (ESP32) //setup for ESP32 boards
+    #define LED         2  //D2
+    #define RELAY       5  //D5
+    #define LED_ON      HIGH
+    #define LED_OFF     LOW   
+#else //setup for Arduino AVR boards
+    #define LED         13
+    #define RELAY       6
+    #define LED_ON      HIGH
+    #define LED_OFF     LOW   
+#endif
 
 Adeon adeon = Adeon();
-//SoftwareSerial default setting – RX 10, TX 11, BAUD 9600 (Uno, Nano, Mini, Micro...)
-//HardwareSerial default setting – Serial2, BAUD 9600 (Mega 2560...)
+/*GSM Class serial setup
+SoftwareSerial default setting for Arduino AVR ATmega328p boards – RX 10, TX 11, BAUD 9600
+SoftwareSerial default setting for ESP8266 boards – RX 14, TX 12, BAUD 9600
+HardwareSerial default setting for Arduino AVR ATmega2560 boards – Serial2, BAUD 9600
+HardwareSerial default setting for ESP32 boards – Serial2, RX 16, TX 17, BAUD 9600
+*/
 GSM gsm = GSM();
 
 char* msgBuf; 
@@ -49,7 +68,7 @@ void numOfItems(){
 }
 
 void ledControl(){
-    (adeon.getParamValue("LED") == 0) ? digitalWrite(LED_BUILTIN, LOW) : digitalWrite(LED_BUILTIN, HIGH);
+    (adeon.getParamValue("LED") == 0) ? digitalWrite(LED, LED_OFF) : digitalWrite(LED, LED_ON);
 }
 
 void callbackRel(uint16_t val){
@@ -63,7 +82,7 @@ void callbackRel(uint16_t val){
 
 void userInit(){
     //add users with ADMIN, USER or HOST rights
-    adeon.addUser("420123456789", ADEON_ADMIN);
+    adeon.addUser("420606771068", ADEON_ADMIN);
     adeon.addUser("420987654321", ADEON_HOST);
     adeon.printUsers();
 }
@@ -98,14 +117,14 @@ void processMsg(){
 
 void setup() {
     // Setup the Serial port. See http://arduino.cc/en/Serial/IfSerial
-    Serial.begin(9600);
+    Serial.begin(BAUD_RATE);
     delay(200);
 
-    pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(LED, OUTPUT);
     pinMode(RELAY, OUTPUT);
-    digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(LED, LED_ON);
     digitalWrite(RELAY, HIGH);
-
+        
     gsm.begin();
 
     userInit();

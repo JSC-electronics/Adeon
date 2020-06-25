@@ -22,24 +22,29 @@
 
 #include <Arduino.h>
 
-#if defined(ARDUINO_AVR_MEGA2560)
+#define BAUD_RATE       9600
+
+#if defined(__AVR_ATmega2560__)
     #define HW_SERIAL
-#elif defined(ARDUINO_AVR_MICRO)       
+#elif defined(__AVR_ATmega328P__)       
     #define SW_SERIAL
-#elif defined(ARDUINO_AVR_MINI)       
+    #define RX          10
+    #define TX          11
+#elif defined(ESP8266)
     #define SW_SERIAL
-#elif defined(ARDUINO_AVR_NANO)       
-    #define SW_SERIAL
-#elif defined(ARDUINO_AVR_UNO)       
-    #define SW_SERIAL
+    #define RX          14  //D5
+    #define TX          12  //D6
+    #define RX_BUF_SIZE 256       
+#elif defined(ESP32)       
+    #define HW_SERIAL
+    #define RX          16
+    #define TX          17
 #else
-    #error "Unknown board"
+    #error "Unsupported board"
 #endif
 
 #ifdef SW_SERIAL
   #include <SoftwareSerial.h>
-  #define RX 10
-  #define TX 11
 #endif
 
 constexpr static auto RX_BUFFER = 255;
@@ -55,10 +60,11 @@ class GSM{
 
   public:
   #ifdef SW_SERIAL
-    GSM(uint8_t rx = RX, uint8_t tx = TX, long baud = 9600);
+    GSM(uint8_t rx = RX, uint8_t tx = TX, long baud = BAUD_RATE);
+    GSM(SoftwareSerial* pGsmSerial);
   #else
-    GSM(long baud = 9600);
-    GSM(HardwareSerial* pGsmSerial, long baud = 9600);
+    GSM(long baud = BAUD_RATE);
+    GSM(HardwareSerial* pGsmSerial);
   #endif
     void begin();
     void checkGsmOutput();
