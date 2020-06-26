@@ -24,14 +24,37 @@
 
 #define getName(var)  #var 
 
-#define RELAY 6
+#if defined(ESP8266) //setup for ESP8266 boards
+    #define LED             2   //D4
+    #define RELAY           5   //D1
+    #define LED_ON          LOW
+    #define LED_OFF         HIGH 
+#elif defined (ESP32) //setup for ESP32 boards
+    #define LED             2  //D2
+    #define RELAY           5  //D5
+    #define LED_ON          HIGH
+    #define LED_OFF         LOW   
+#else //setup for Arduino AVR boards
+    #define LED             13
+    #define RELAY           6
+    #define LED_ON          HIGH
+    #define LED_OFF         LOW   
+#endif
+
+#define T_PERIOD            1000
 
 Adeon adeon = Adeon();
-//SoftwareSerial default setting – RX 10, TX 11, BAUD 9600 (Uno, Nano, Mini, Micro...)
-//HardwareSerial default setting – Serial2, BAUD 9600 (Mega 2560...)
+/*GSM Class serial setup
+SoftwareSerial default setting for Arduino AVR ATmega328p boards – RX 10, TX 11, BAUD 9600
+SoftwareSerial default setting for ESP8266 boards – RX 14, TX 12, BAUD 9600
+HardwareSerial default setting for Arduino AVR ATmega2560 boards – Serial2, BAUD 9600
+HardwareSerial default setting for ESP32 boards – Serial2, RX 16, TX 17, BAUD 9600
+*/
 GSM gsm = GSM();
 
 uint16_t counter = 0;
+uint32_t tFlag = 0;
+uint32_t tNow = 0;
 
 char pnHost[LIST_ITEM_LENGTH];
 char pnUser[LIST_ITEM_LENGTH];
@@ -48,7 +71,7 @@ void setStrings();
 void numOfItems();
 void callbackRel(uint16_t val);
 void accessManagement(uint16_t val);
-void setupTimer();
+void closingHandler();
 void userInit();
 void paramInit();
 void processMsg();
@@ -78,11 +101,20 @@ void callbackRel(uint16_t val){
     Serial.print(F("REL VAL: "));
     Serial.println(val);
 
-    (val == 0) ? digitalWrite(RELAY, HIGH) : digitalWrite(RELAY, LOW); 
+    if(val == 0){
+        digitalWrite(RELAY, HIGH);
+        digitalWrite(LED, LED_OFF); 
+    }
+    else{
+        digitalWrite(RELAY, LOW); 
+        digitalWrite(LED, LED_ON); 
+    }
 }
 
 void accessManagement(uint16_t val){
-    Serial.print("PARAM SET TO ");
+    Serial.print(F("PARAM "));
+    Serial.print(getName(parRelay));
+    Serial.print(F(" ACCESS SET TO: "));
     if(val == 0){
         adeon.setParamAccess(parRelay, ADEON_ADMIN);
         Serial.println(getName(ADEON_ADMIN));
@@ -97,36 +129,22 @@ void accessManagement(uint16_t val){
     }
 }
 
-void setupTimer1() {
-  noInterrupts();
-  // Clear registers
-  TCCR1A = 0;
-  TCCR1B = 0;
-  TCNT1 = 0;
-
-  // 1 Hz (16000000/((15624+1)*1024))
-  OCR1A = 15624;
-  // CTC
-  TCCR1B |= (1 << WGM12);
-  // Prescaler 1024
-  TCCR1B |= (1 << CS12) | (1 << CS10);
-  // Output Compare Match A Interrupt Enable
-  TIMSK1 |= (1 << OCIE1A);
-  interrupts();
-}
-
-ISR(TIMER1_COMPA_vect) {
-    if(adeon.getParamValue(parRelay) == 1){
-        if(adeon.getParamValue(parClose) > counter){
-            counter++;
+void closingHandler(){
+    tNow = millis();
+    if(tNow - tFlag > T_PERIOD){
+        if(adeon.getParamValue(parRelay) == 1){
+            if(adeon.getParamValue(parClose) > counter){
+                counter++;
+            }
+            else{
+                adeon.editParamValue(parRelay, 0);
+                adeon.printParams();
+            }
         }
         else{
-            adeon.editParamValue(parRelay, 0);
-            adeon.printParams();
+            counter = 0;
         }
-    }
-    else{
-        counter = 0;
+        tFlag = millis();   
     }
 }
 
@@ -147,7 +165,7 @@ void paramInit(){
 }
 
 void processMsg(){
-    Serial.println("\nPROCESSING INCOMMING MSG.");
+    Serial.println(F("\nPROCESSING INCOMMING MSG."));
     //simulation of incomming message 
     if(adeon.isAdeonReady()){
         if(adeon.isUserInAdeon(pnBuf)){
@@ -168,12 +186,12 @@ void processMsg(){
 
 void setup() {
     // Setup the Serial port. See http://arduino.cc/en/Serial/IfSerial
-    Serial.begin(9600);
+    Serial.begin(BAUD_RATE);
     delay(200);
 
-    pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(LED, OUTPUT);
     pinMode(RELAY, OUTPUT);
-    digitalWrite(LED_BUILTIN, LOW);
+    digitalWrite(LED, LED_OFF);
     digitalWrite(RELAY, HIGH);
 
     gsm.begin();
@@ -181,8 +199,8 @@ void setup() {
     setStrings();
     userInit();
     paramInit();
-    numOfItems();  
-    setupTimer1();  
+    numOfItems();    
+    tFlag = millis();
 }
 
 void loop() {
@@ -192,4 +210,5 @@ void loop() {
         msgBuf = gsm.getMsg();
         processMsg();
     }
+    closingHandler();
 }
