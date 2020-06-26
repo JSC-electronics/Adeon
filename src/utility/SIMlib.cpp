@@ -30,11 +30,12 @@
  */
 GSM::GSM(uint8_t rx, uint8_t tx, long baud){
     #ifdef ESP8266
-        SoftwareSerial *pGsmSerial = new SoftwareSerial(rx, tx, false, RX_BUF_SIZE, 0);
+        SoftwareSerial *pGsmSerial = new SoftwareSerial();
+        pGsmSerial->begin(baud, SWSERIAL_8N1, rx, tx, false, RX_BUF_SIZE, 0);
     #else
         SoftwareSerial *pGsmSerial = new SoftwareSerial(rx, tx);
+        pGsmSerial->begin(baud);
     #endif
-    pGsmSerial->begin(baud);
     _pSerialHandler = new SerialHandler(pGsmSerial);
     _pParser = new ParserGSM(_pSerialHandler, &_newMsg, &_lastMsgIndex);
     _pTelBuffer = _pParser->getPointTelBuf();   

@@ -82,7 +82,7 @@ void callbackRel(uint16_t val){
 
 void userInit(){
     //add users with ADMIN, USER or HOST rights
-    adeon.addUser("420606771068", ADEON_ADMIN);
+    adeon.addUser("420123456789", ADEON_ADMIN);
     adeon.addUser("420987654321", ADEON_HOST);
     adeon.printUsers();
 }
