@@ -74,14 +74,34 @@ void ItemList::deleteItem(Item* pItem){
         if(pItem != _pHead){
             Item* pPrev = pItem->getPointToPrevItem();
             pPrev->setPointToNextItem(pItem->getPointToNextItem());
+            Item* pNext = pItem->getPointToNextItem();
+            if(pNext == nullptr){
+                _pLast = pPrev;
+            }
+            else{
+                pNext->setPointToPrevItem(pItem->getPointToPrevItem());
+            }
         }
-        else{
+        else if(pItem != _pLast){
             _pHead = pItem->getPointToNextItem();
             _pHead->setPointToPrevItem(nullptr);
+        }
+        else{
+            deleteHead();
         }
         delete[]pItem;
         _numOfItems--;
     }
+}
+
+/**
+ * @brief Delete head of list.
+ * 
+ * If head of list is null the linking to list is lost – list deleted.
+ */
+void ItemList::deleteHead(){
+    _pHead = nullptr;
+    _pLast = nullptr;
 }
 
 /**
@@ -243,6 +263,7 @@ ItemList::Item* ItemList::Item::getPointToPrevItem(){
  * @param pSrc which is a pointer to source string
  */
 void ItemList::Item::saveId(const char* pSrc){
-    memset(id, 0, sizeof(id));
-    strcpy(id, pSrc);
+    id = (char*) malloc (sizeof(char) * (strlen(pSrc) + 1));
+    strncpy(id, pSrc, strlen(pSrc));
+    id[strlen(pSrc)] = '\0';
 }

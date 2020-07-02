@@ -50,6 +50,7 @@ class Adeon {
         Adeon();
         void addUser(const char* pTelNum, uint16_t userGroup = 1);
         void deleteUser(const char* pTelNum);
+        void deleteList();
         char* editUserPhone(const char* pActualTelNum, const char* pNewTelNum);
         void editUserRights(const char* pTelNum, uint16_t userGroup = 1);
         bool isUserInAdeon(const char* pTelNum);
