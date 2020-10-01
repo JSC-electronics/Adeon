@@ -341,7 +341,7 @@ uint16_t Adeon::Parser::getValue(){
 }
 
 /**
- * @brief Pars hash from message and check its validity.
+ * @brief Parse hash from message and check its validity.
  * @return <code>true</code> if hash is valid, <code>false</code> otherwise.
  * 
  * After hash parsing is called method from class Hash which carries out if hash is valid or not.

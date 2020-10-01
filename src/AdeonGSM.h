@@ -110,7 +110,7 @@ class Adeon {
             Hash* _pHash;
             State parsState = State::READY;
         
-            char _tmpHash[SHORT_HASH_LENGTH];
+            char _tmpHash[SHORT_HASH_LENGTH + 1]; // Reserve space for \0 character
             char _subStr[LIST_ITEM_LENGTH];
             char _pTmpName[LIST_ITEM_LENGTH];
             uint16_t _tmpValue;
