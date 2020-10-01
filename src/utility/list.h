@@ -36,6 +36,7 @@ class ItemList {
     public:      
       Item* addItem(const char* pId, uint16_t val);
       void deleteItem(Item* pItem);
+      void deleteHead();
       char* editItemId(Item* pItem, const char* pNewId);
 	    void editItemVal(Item* pItem, uint16_t val);
       Item* findItem(const char* pId);
@@ -60,7 +61,7 @@ class ItemList {
           Item* getPointToPrevItem();
           void saveId(const char* pSrc);
 
-          char id[LIST_ITEM_LENGTH];
+          char* id;
           uint16_t value = 0;
           uint8_t accessRights = 1;
           void (*_pCallback)(uint16_t) = nullptr;
