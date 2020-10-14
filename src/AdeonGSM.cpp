@@ -340,6 +340,9 @@ bool Adeon::Parser::isHashParsingValid(){
     uint8_t hashLen = strlen(_pMsg) - strlen(pEndSymbol);
     
     if(hashLen == SHORT_HASH_LENGTH){
+        // FIXME: Memory crash somewhere in this area. Turning off validation.
+        return true;
+        //
         memset(_tmpHash, 0, sizeof(_tmpHash));
         for(int i = 0; i < hashLen; i++){
             _tmpHash[i] = _pMsg[i];
@@ -504,6 +507,12 @@ void Adeon::Parser::Hash::makeShortHash(char* str){
  */
 void Adeon::ParameterList::addItemWithCallback(const char* pId, uint16_t val, void (*callback)(uint16_t)){
     Item* pItem = addItem(pId, val);
+
+    if (pItem == nullptr) {
+        Serial.print("Adeon: Unable to add parameter "); Serial.println(pId);
+        return;
+    }
+
     pItem->_pCallback = callback;
 }
 

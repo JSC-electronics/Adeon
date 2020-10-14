@@ -22,7 +22,8 @@
  * limitations under the License.
  */
 
-#pragma once
+#ifndef ADEON_GSM_H
+#define ADEON_GSM_H
 
 #include <Arduino.h>
 #include "utility/MD5.h"
@@ -142,3 +143,5 @@ class Adeon {
         UserList userList;
         ParameterList paramList;
 };
+
+#endif // ADEON_GSM_H

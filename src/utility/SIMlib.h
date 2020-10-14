@@ -20,9 +20,12 @@
  * limitations under the License.
  */
 
+#ifndef ADEON_SIM_LIB_H
+#define ADEON_SIM_LIB_H
+
 #include <Arduino.h>
 
-#define BAUD_RATE       9600
+#define DEFAULT_BAUD_RATE       9600
 
 #if defined(__AVR_ATmega2560__)
     #define HW_SERIAL
@@ -50,22 +53,20 @@
 constexpr static auto RX_BUFFER = 255;
 constexpr static auto MSG_LENGTH = 147;
 constexpr static auto MAX_CMD_LENGTH = 20;
-constexpr static auto TEL_LENGTH = 16;
+constexpr static auto PHONE_NUMBER_LENGTH = 16;
 constexpr static auto PERIODIC_READ_TIME = 150; //ms 
 
-class GSM{
-  private:
-    class ParserGSM;
-    class SerialHandler;
-
+class GSM {
   public:
-  #ifdef SW_SERIAL
-    GSM(uint8_t rx = RX, uint8_t tx = TX, long baud = BAUD_RATE);
-    GSM(SoftwareSerial* pGsmSerial);
-  #else
-    GSM(long baud = BAUD_RATE);
-    GSM(HardwareSerial* pGsmSerial);
-  #endif
+
+    #ifdef HW_SERIAL
+    GSM(long baud = DEFAULT_BAUD_RATE);
+    #endif
+
+    // GSM(long baud = DEFAULT_BAUD_RATE);
+    GSM(uint8_t rx, uint8_t tx, long baud = DEFAULT_BAUD_RATE);
+    GSM(Stream* pGsmSerial);
+    
     void begin();
     void checkGsmOutput();
     bool isNewMsgAvailable();
@@ -73,83 +74,75 @@ class GSM{
     char* getPhoneNum();
 
   private:
+    class SerialHandler{
+      public:
+      SerialHandler(Stream* pGsmSerial);
+
+      void serialWrite(const char* command);
+      void periodicSerialCheck(); //get num of received bytes
+      void feedbackSerialCheck();
+      char* getRxBufferP();
+      bool isRxBufferAvailable();
+      void setRxBufferAvailability(bool var);
+      void serialRead(uint8_t incomingBytes);
+
+      Stream* _pGsmSerial;
+
+      bool _periodicReading = true; //peridical serial monitor reading, can be used in timer or loop as well
+      bool _rxBufferAvailable = false;
+      unsigned long _lastReadTime = 0;
+      bool _periodicReadingFlag = true;
+
+      char* _rxBuffer = nullptr;
+    };
+
+    class ParserGSM{
+      public:
+        ParserGSM(SerialHandler* pSerialHandler, bool* newMsg, uint8_t* lastMsgIndex);
+        bool getResponse(const char* searchedChar);
+        bool identifyIncomingMsg(const char* command);
+        char* makeDynamicCmd(const char* command, uint8_t id);
+        void getMsg();
+        void getPhoneNumber();
+        char* getPointMsgBuf();
+        char* getPointPhoneBuf();
+
+      private:
+        uint8_t GetIndex(char* buffer, char startSym);
+
+        SerialHandler* _pSerialHandler;
+
+        bool* _pNewMsg;
+        char* _pRxBuffer = nullptr;
+        char* _msgBuffer = nullptr;
+        char* _cmdBuffer = nullptr;
+        char _phoneBuffer[PHONE_NUMBER_LENGTH];
+        uint8_t* _pLastMsgIndex;
+    };
+
     bool sendCommand(const char* cmd);
     void deleteMsg();
     void deleteMsgGsmStack();
 
-  private:
-    const char* confirmFeedback = "OK";
-    const char* basicCommand = "AT";
-    const char* pinCheck = "AT+CPIN?";
-    const char* checkSimCard = "AT+CPIN?";
-    const char* plainTextMode = "AT+CMGF=1";
-    const char* gsmMode = "AT+CFUN=1";
-    const char* smsReading = "AT+CMGR=";
-    const char* deleteSms = "AT+CMGD=";
-    const char* incomingSms = "CMTI";
+    static constexpr const char* confirmFeedback = "OK";
+    static constexpr const char* basicCommand = "AT";
+    static constexpr const char* pinCheck = "AT+CPIN?";
+    static constexpr const char* checkSimCard = "AT+CPIN?";
+    static constexpr const char* plainTextMode = "AT+CMGF=1";
+    static constexpr const char* gsmMode = "AT+CFUN=1";
+    static constexpr const char* smsReading = "AT+CMGR=";
+    static constexpr const char* deleteSms = "AT+CMGD=";
+    static constexpr const char* incomingSms = "CMTI";
 
     ParserGSM* _pParser;
     SerialHandler* _pSerialHandler;
 
     char* _pMsgBuffer;
-    char* _pTelBuffer;
+    char* _pPhoneBuffer;
     uint8_t _lastMsgIndex = 0;
     uint8_t _pwrPin = 0;
 
     bool _newMsg = false; //if GSM recieve new message, it will be checked by timer
-
-  class ParserGSM{
-    public:
-      ParserGSM(SerialHandler* pSerialHandler, bool* newMsg, uint8_t* lastMsgIndex);
-      bool getResponse(const char* searchedChar);
-      bool identifyIncomingMsg(const char* command);
-      char* makeDynamicCmd(const char* command, uint8_t id);
-      void getMsg();
-      void getTelNum();
-      char* getPointMsgBuf();
-      char* getPointTelBuf();
-
-    private:
-      uint8_t GetIndex(char* buffer, char startSym);
-      const char* incomingSms = "CMTI";
-
-      SerialHandler* _pSerialHandler;
-
-      bool* _pNewMsg;
-      char* _pRxBuffer = nullptr;
-      char* _msgBuffer = nullptr;
-      char* _cmdBuffer = nullptr;
-      char _telBuffer[TEL_LENGTH];
-      uint8_t* _pLastMsgIndex;
-  };
-
-  class SerialHandler{
-    public:
-  #ifdef SW_SERIAL
-    SerialHandler(SoftwareSerial* pGsmSerial);
-  #else
-    SerialHandler(HardwareSerial* pGsmSerial);
-  #endif
-    void serialWrite(const char* command);
-    void periodicSerialCheck(); //get num of received bytes
-    void feedbackSerialCheck();
-    char* getRxBufferP();
-    bool isRxBufferAvailable();
-    void setRxBufferAvailability(bool var);
-    void serialRead(uint8_t incomingBytes);
-
-    #ifdef SW_SERIAL
-      SoftwareSerial* _pGsmSerial;
-    #else
-      HardwareSerial* _pGsmSerial;
-    #endif
-
-    bool _periodicReading = true; //peridical serial monitor reading, can be used in timer or loop as well
-    bool _rxBufferAvailable = false;
-    unsigned long _lastReadTime = 0;
-    bool _periodicReadingFlag = true;
-
-    char* _rxBuffer = nullptr;
-  };
 };
 
+#endif // ADEON_SIM_LIB_H

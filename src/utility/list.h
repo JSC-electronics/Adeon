@@ -22,7 +22,8 @@
  * limitations under the License.
  */
 
-#pragma once
+#ifndef ADEON_LIST_H
+#define ADEON_LIST_H
 
 #include <Arduino.h>
 
@@ -71,3 +72,5 @@ class ItemList {
           Item* _pPrev = nullptr; 
     };  
 };
+
+#endif // ADEON_LIST_H
