@@ -23,64 +23,54 @@
 #include <AdeonGSM.h>
 
 /**
- * @brief Constructor for the class Adeon.
- * Create instances of parser and user/parameter list.
- */
-Adeon::Adeon(){
-    parser = new Parser(_msg);
-    userList = new UserList();
-    paramList = new ParameterList();
-}
-
-/**
  * @brief Add user into Adeon.
- * @param pTelNum is pointer to telephone number constant string.
+ * @param phoneNum is pointer to telephone number constant string.
  * @param userGroup is variable which defines user rights.
  */
-void Adeon::addUser(const char* pTelNum, uint16_t userGroup){
-    userList->addItem(pTelNum, userGroup);
+void Adeon::addUser(const char* phoneNum, uint16_t userGroup){
+    userList.addItem(phoneNum, userGroup);
 }
 
 /**
  * @brief Delete user from Adeon.
- * @param pTelNum is pointer to telephone number constant string.
+ * @param phoneNum is pointer to telephone number constant string.
  */
-void Adeon::deleteUser(const char* pTelNum){
-    userList->deleteItem(userList->findItem(pTelNum));
+void Adeon::deleteUser(const char* phoneNum){
+    userList.deleteItem(userList.findItem(phoneNum));
 }
 
 /**
  * @brief Delete whole Adeon list.
  */
 void Adeon::deleteList(){
-    userList->deleteHead();
+    userList.deleteHead();
 }
 
 /**
  * @brief Edit user telephone number.
- * @param pActualTelNum is pointer to actual telephone number constant string.
- * @param pNewTelNum is pointer to new telephone number constant string.
+ * @param actualPhoneNum is a pointer to actual telephone number constant string.
+ * @param newPhoneNum is pointer to new telephone number constant string.
  */
-char* Adeon::editUserPhone(const char* pActualTelNum, const char* pNewTelNum){
-    return userList->editItemId(userList->findItem(pActualTelNum), pNewTelNum);
+char* Adeon::editUserPhone(const char* actualPhoneNum, const char* newPhoneNum){
+    return userList.editItemId(userList.findItem(actualPhoneNum), newPhoneNum);
 }
 
 /**
  * @brief Edit user rights.
- * @param pTelNum is pointer to telephone number constant string.
+ * @param phoneNum is pointer to telephone number constant string.
  * @param userGroup is variable which defines user rights.
  */
-void Adeon::editUserRights(const char* pTelNum, uint16_t userGroup){
-    userList->editItemVal(userList->findItem(pTelNum), userGroup);
+void Adeon::editUserRights(const char* phoneNum, uint16_t userGroup){
+    userList.editItemVal(userList.findItem(phoneNum), userGroup);
 }
 
 /**
  * @brief Check if user is in Adeon.
- * @param pTelNum is pointer to telephone number constant string.
- * @return userList->isInList(userList->findItem(pTelNum)) <code>true</code> if user is in the list, <code>false</code> otherwise.
+ * @param phoneNum is pointer to telephone number constant string.
+ * @return userList->isInList(userList->findItem(phoneNum)) <code>true</code> if user is in the list, <code>false</code> otherwise.
  */
-bool Adeon::isUserInAdeon(const char* pTelNum){
-    return userList->isInList(userList->findItem(pTelNum));
+bool Adeon::isUserInAdeon(const char* phoneNum){
+    return userList.isInList(userList.findItem(phoneNum));
 }
 
 /**
@@ -88,16 +78,16 @@ bool Adeon::isUserInAdeon(const char* pTelNum){
  * @return userList->getNumOfItems() - return value is number of users in the list.
  */
 uint8_t Adeon::getNumOfUsers(){
-    return userList->getNumOfItems();
+    return userList.getNumOfItems();
 }
 
 /**
  * @brief Get user rights value.
- * @param pTelNum is pointer to telephone number constant string.
- * @return userList->getItemVal(userList->findItem(pTelNum)) - return value is user rights value.
+ * @param phoneNum is pointer to telephone number constant string.
+ * @return userList->getItemVal(userList->findItem(phoneNum)) - return value is user rights value.
  */
-uint16_t Adeon::getUserRightsLevel(const char* pTelNum){
-    return userList->getItemVal(userList->findItem(pTelNum));
+uint16_t Adeon::getUserRightsLevel(const char* phoneNum){
+    return userList.getItemVal(userList.findItem(phoneNum));
 }
 
 /**
@@ -107,7 +97,7 @@ uint16_t Adeon::getUserRightsLevel(const char* pTelNum){
  * To carry out this metod is necessary to initialize serial terminal in setup (Serial.begin).
  */
 void Adeon::printUsers(){
-    userList->printData();
+    userList.printData();
 }
 
 /**
@@ -116,7 +106,7 @@ void Adeon::printUsers(){
  * @param val is variable which defines value of parameter.
  */
 void Adeon::addParam(const char* pName, uint16_t val){
-    paramList->addItem(pName, val);
+    paramList.addItem(pName, val);
 }
 
 /**
@@ -126,7 +116,7 @@ void Adeon::addParam(const char* pName, uint16_t val){
  * @param *callback is function callback which is triggered after changing 
  */
 void Adeon::addParamWithCallback(void (*callback)(uint16_t), const char* pName, uint16_t val){
-    paramList->addItemWithCallback(pName, val, callback);
+    paramList.addItemWithCallback(pName, val, callback);
 }
 
 /**
@@ -136,7 +126,7 @@ void Adeon::addParamWithCallback(void (*callback)(uint16_t), const char* pName, 
 Default access rights for parameter is level ADMIN
  */
 void Adeon::setParamAccess(const char* pName, uint8_t access){
-    paramList->setParamAccess(paramList->findItem(pName), access);
+    paramList.setParamAccess(paramList.findItem(pName), access);
 }
 
 /**
@@ -144,7 +134,7 @@ void Adeon::setParamAccess(const char* pName, uint8_t access){
  * @param pName is pointer to name constant string.
  */
 void Adeon::deleteParam(const char* pName){
-    paramList->deleteItem(paramList->findItem(pName));
+    paramList.deleteItem(paramList.findItem(pName));
 }
 
 /**
@@ -153,7 +143,7 @@ void Adeon::deleteParam(const char* pName){
  * @param pNewName is pointer to new name constant string.
  */
 char* Adeon::editParamName(const char* pActualName, const char* pNewName){
-    return paramList->editItemId(paramList->findItem(pActualName), pNewName);
+    return paramList.editItemId(paramList.findItem(pActualName), pNewName);
 }
 
 /**
@@ -162,7 +152,7 @@ char* Adeon::editParamName(const char* pActualName, const char* pNewName){
  * @param val is variable which defines new value of parameter.
  */
 void Adeon::editParamValue(const char* pName, uint16_t val){
-    paramList->editItemVal(paramList->findItem(pName), val);
+    paramList.editItemVal(paramList.findItem(pName), val);
 }
 
 /**
@@ -171,7 +161,7 @@ void Adeon::editParamValue(const char* pName, uint16_t val){
  * @return paramList->isInList(paramList->findItem(pName)) <code>true</code> if parameter is in the list, <code>false</code> otherwise.
  */
 bool Adeon::isParamInAdeon(const char* pName){
-    return paramList->isInList(paramList->findItem(pName));
+    return paramList.isInList(paramList.findItem(pName));
 }
 
 /**
@@ -179,7 +169,7 @@ bool Adeon::isParamInAdeon(const char* pName){
  * @return userList->getNumOfItems() - return value is number of parameters in the list.
  */
 uint8_t Adeon::getNumOfParams(){
-    return paramList->getNumOfItems();
+    return paramList.getNumOfItems();
 }
 
 /**
@@ -188,7 +178,7 @@ uint8_t Adeon::getNumOfParams(){
  * @return paramList->getItemVal(paramList->findItem(pName)); - return value is parameter value.
  */
 uint16_t Adeon::getParamValue(const char* pName){
-    return paramList->getItemVal(paramList->findItem(pName));
+    return paramList.getItemVal(paramList.findItem(pName));
 }
 
 /**
@@ -198,7 +188,7 @@ uint16_t Adeon::getParamValue(const char* pName){
  * To carry out this metod is necessary to initialize serial terminal in setup (Serial.begin).
  */
 void Adeon::printParams(){
-    paramList->printData();
+    paramList.printData();
 }
 
 /**
@@ -211,18 +201,18 @@ void Adeon::printParams(){
  * 4. Parse parameter names and values until all received data has been processed.
  * 5. Set Adeon state to <code>true</code>.
  */
-void Adeon::parseBuf(char* pMsg, uint8_t userGroup){
+void Adeon::parseBuf(const char* pMsg, uint8_t userGroup){
     char* tmpName;
-    if(strlen(pMsg) <= MSG_BUFFER_LENGTH && parser->isParserReady() && !paramList->isListEmpty()){
+    if(strlen(pMsg) <= MSG_BUFFER_LENGTH && parser.isParserReady() && !paramList.isListEmpty()){
         _ready = false;
         memset(_msg, 0, sizeof(_msg));
         strcpy(_msg, pMsg);
-        if(parser->isMsgValid()){
-            while(parser->isNameAvailable()){
-                parser->parse();
-                tmpName = parser->getTmpName();
+        if(parser.isMsgValid()){
+            while(parser.isNameAvailable()){
+                parser.parse();
+                tmpName = parser.getTmpName();
                 if(isParamInAdeon(tmpName) && (getParamAccess(tmpName) >= userGroup)){
-                    editParamValue(tmpName, parser->getValue());
+                    editParamValue(tmpName, parser.getValue());
                 }
             }
         }
@@ -242,8 +232,8 @@ bool Adeon::isAdeonReady(){
  * @brief Get parameter access rights.
  * @param pName is pointer to name constant string.
  */
-uint8_t Adeon::getParamAccess(char* pName){
-    return paramList->getParamAccess(paramList->findItem(pName));
+uint8_t Adeon::getParamAccess(const char* pName){
+    return paramList.getParamAccess(paramList.findItem(pName));
 }
 
 /**
@@ -254,7 +244,6 @@ uint8_t Adeon::getParamAccess(char* pName){
  */
 Adeon::Parser::Parser(char* pMsg){
     _pMsg = pMsg;
-    _pHash = new Hash(pMsg, _tmpHash);
 }
 
 /**
@@ -356,7 +345,7 @@ bool Adeon::Parser::isHashParsingValid(){
             _tmpHash[i] = _pMsg[i];
         }
         _tmpHash[hashLen] = _nullChar;
-        return _pHash->isHashValid();
+        return _pHash.isHashValid();
     }
     return false;
 }
@@ -503,20 +492,6 @@ void Adeon::Parser::Hash::makeShortHash(char* str){
     uint8_t strLength = strlen(str); 
     memset(_shortHash, 0, sizeof(_shortHash));
     strcpy(_shortHash, &str[strLength - SHORT_HASH_LENGTH]);
-}
-
-/**
- * @brief Empty constructor for nested class UserList.
- */
-Adeon::UserList::UserList(){
-
-}
-
-/**
- * @brief Empty constructor for nested class ParameterList.
- */
-Adeon::ParameterList::ParameterList(){
-
 }
 
 /**
