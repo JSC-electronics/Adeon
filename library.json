@@ -1,6 +1,6 @@
 {
   "name": "Adeon",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "keywords": "arduino, adeon, gsm, remote-control, automation",
   "description": "Adeon is a software solution for controlling GSM devices (GSM gates, relays, modules etc.) via SMS commands. It consists of two main parts – Adeon mobile app available on Google Play and this library for embedded development kits. Adeon app allows users to create a list of GSM devices with predefined commands. These commands can be sent in form of SMS message to the target GSM device and thus control its behaviour, e.g. switch on / off a relay, open / close a gate, de/activate alarm etc. The library for Arduino provides user an API for receiving commands from the Adeon app.",
   "license": "Apache-2.0",
