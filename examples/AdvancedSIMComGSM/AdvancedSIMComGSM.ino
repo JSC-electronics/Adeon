@@ -186,7 +186,7 @@ void processMsg(){
 
 void setup() {
     // Setup the Serial port. See http://arduino.cc/en/Serial/IfSerial
-    Serial.begin(BAUD_RATE);
+    Serial.begin(DEFAULT_BAUD_RATE);
     delay(200);
 
     pinMode(LED, OUTPUT);

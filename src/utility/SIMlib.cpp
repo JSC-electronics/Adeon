@@ -58,7 +58,11 @@ Stream *pGsmSerial = nullptr;
         ((SoftwareSerial*) pGsmSerial)->begin(baud);
     #endif
 #else
-    Serial2.begin(DEFAULT_BAUD_RATE, SERIAL_8N1, rx, tx);
+    #ifdef ESP32
+        Serial2.begin(baud, SERIAL_8N1, rx, tx);
+    #else
+        Serial2.begin(baud);
+    #endif
     pGsmSerial = &Serial2;
 #endif
     _pSerialHandler = new SerialHandler(pGsmSerial);

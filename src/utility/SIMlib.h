@@ -63,8 +63,11 @@ class GSM {
     GSM(long baud = DEFAULT_BAUD_RATE);
     #endif
 
-    // GSM(long baud = DEFAULT_BAUD_RATE);
+    #if defined(RX) && defined(TX)
+    GSM(uint8_t rx = RX, uint8_t tx = TX, long baud = DEFAULT_BAUD_RATE);
+    #else
     GSM(uint8_t rx, uint8_t tx, long baud = DEFAULT_BAUD_RATE);
+    #endif
     GSM(Stream* pGsmSerial);
     
     void begin();
