@@ -22,7 +22,8 @@
  * limitations under the License.
  */
 
-#pragma once
+#ifndef ADEON_GSM_H
+#define ADEON_GSM_H
 
 #include <Arduino.h>
 #include "utility/MD5.h"
@@ -40,22 +41,15 @@ constexpr static auto MSG_BUFFER_LENGTH = 140; /* - Maximum number of characters
                                                 */
 
 class Adeon {
-    private:
-        //forward declaration  of nested classes
-        class Parser; 
-        class UserList;
-        class ParameterList;
-
     public:
-        Adeon();
-        void addUser(const char* pTelNum, uint16_t userGroup = 1);
-        void deleteUser(const char* pTelNum);
+        void addUser(const char* phoneNum, uint16_t userGroup = 1);
+        void deleteUser(const char* phoneNum);
         void deleteList();
-        char* editUserPhone(const char* pActualTelNum, const char* pNewTelNum);
-        void editUserRights(const char* pTelNum, uint16_t userGroup = 1);
-        bool isUserInAdeon(const char* pTelNum);
+        char* editUserPhone(const char* actualPhoneNum, const char* newPhoneNum);
+        void editUserRights(const char* phoneNum, uint16_t userGroup = 1);
+        bool isUserInAdeon(const char* phoneNum);
         uint8_t getNumOfUsers();
-        uint16_t getUserRightsLevel(const char* pTelNum);
+        uint16_t getUserRightsLevel(const char* phoneNum);
         void printUsers();
 
         void addParam(const char* pName, uint16_t val = 1);
@@ -69,89 +63,85 @@ class Adeon {
         uint16_t getParamValue(const char* pName);
         void printParams();
 
-        void parseBuf(char* pMsg, uint8_t userGroup);
+        void parseBuf(const char* pMsg, uint8_t userGroup);
         bool isAdeonReady();
     
     private:
-        uint8_t getParamAccess(char* pName); 
+        class Parser {
+            public:
+                Parser(char* pMsg);
+                bool isParserReady();
+                bool isMsgValid();
+                bool isNameAvailable();
+                void parse();
+
+                char* getTmpName();
+                uint16_t getValue();
+
+            private:
+                enum class State{
+                    READY,
+                    INIT,
+                    PROCESSING
+                };
+                const char _hashEndSymbol = ':';
+                const char _semicolon = ';';
+                const char _equal = '=';
+                const char _gap = ' ';
+                const char _nullChar = '\0';
+
+                class Hash {
+                    public:
+                        Hash(char* pMsg, char* pMsgHash);
+                        bool isHashValid();
+
+                    private:
+                        char* _pMsg = nullptr;
+                        char* _pTmpMsg = nullptr;
+                        char* _pMsgHash = nullptr;
+                        char _shortHash[SHORT_HASH_LENGTH];
+
+                        void makeHashFromStr();
+                        void makeShortHash(char* str);
+                };
+
+                Hash _pHash = Hash(_pMsg, _tmpHash);
+                State parsState = State::READY;
+            
+                char _tmpHash[SHORT_HASH_LENGTH + 1]; // Reserve space for \0 character
+                char _subStr[LIST_ITEM_LENGTH];
+                char _pTmpName[LIST_ITEM_LENGTH];
+                uint16_t _tmpValue;
+                char* _pMsg = nullptr;
+                uint8_t _numberOfNames = 0; // get by getNumberOfParams(char* pMsg) function
+                uint8_t _processedNames = 0;
+
+                bool isHashParsingValid(); 
+                uint8_t getNumberOfNames();
+                char* parseName();
+                void parseValue(char* pActualParam);
+                char* getCharsUntilEndSym(char* pActualParam, char endSymbol);
+                char* positionOfStr(char* pStr, uint8_t pos, char startSymbol);
+        };
+
+        class UserList : public ItemList{
+        };
+
+        class ParameterList : public ItemList{
+            public:
+                void addItemWithCallback(const char* pId, uint16_t val, void (*callback)(uint16_t));
+                void setParamAccess(Item* pItem, uint8_t access);
+                uint8_t getParamAccess(Item* pItem);
+        };
+
+        uint8_t getParamAccess(const char* pName); 
 
         char _msg[MSG_BUFFER_LENGTH];
         bool _ready = true; // indicator, that Adeon is ready to process new data
 
-        Adeon::Parser* parser;
-        Adeon::UserList* userList;
-        Adeon::ParameterList* paramList;
-
-    //nested class Parser
-    class Parser {
-        public:
-            Parser(char* pMsg);
-            bool isParserReady();
-            bool isMsgValid();
-            bool isNameAvailable();
-            void parse();
-
-            char* getTmpName();
-            uint16_t getValue();
-
-        private:
-            enum class State{
-                READY,
-                INIT,
-                PROCESSING
-            };
-            const char _hashEndSymbol = ':';
-            const char _semicolon = ';';
-            const char _equal = '=';
-            const char _gap = ' ';
-            const char _nullChar = '\0';
-
-            class Hash; //forward declaration of nested class Hash
-            Hash* _pHash;
-            State parsState = State::READY;
-        
-            char _tmpHash[SHORT_HASH_LENGTH + 1]; // Reserve space for \0 character
-            char _subStr[LIST_ITEM_LENGTH];
-            char _pTmpName[LIST_ITEM_LENGTH];
-            uint16_t _tmpValue;
-            char* _pMsg = nullptr;
-            uint8_t _numberOfNames = 0; // get by getNumberOfParams(char* pMsg) function
-            uint8_t _processedNames = 0;
-
-            bool isHashParsingValid(); 
-            uint8_t getNumberOfNames();
-            char* parseName();
-            void parseValue(char* pActualParam);
-            char* getCharsUntilEndSym(char* pActualParam, char endSymbol);
-            char* positionOfStr(char* pStr, uint8_t pos, char startSymbol);
-
-        //nested class Hash
-        class Hash {
-            public:
-                Hash(char* pMsg, char* pMsgHash);
-                bool isHashValid();
-
-            private:
-                char* _pMsg = nullptr;
-                char* _pTmpMsg = nullptr;
-                char* _pMsgHash = nullptr;
-                char _shortHash[SHORT_HASH_LENGTH];
-
-                void makeHashFromStr();
-                void makeShortHash(char* str);
-        };
-    };
-
-    class UserList : public ItemList{
-        public:
-            UserList();
-    };
-
-    class ParameterList : public ItemList{
-        public:
-            ParameterList();
-            void addItemWithCallback(const char* pId, uint16_t val, void (*callback)(uint16_t));
-            void setParamAccess(Item* pItem, uint8_t access);
-            uint8_t getParamAccess(Item* pItem);
-    };
+        Parser parser = Parser(_msg);
+        UserList userList;
+        ParameterList paramList;
 };
+
+#endif // ADEON_GSM_H
