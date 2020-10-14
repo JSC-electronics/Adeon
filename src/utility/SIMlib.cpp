@@ -52,10 +52,10 @@ Stream *pGsmSerial = nullptr;
 #ifdef SW_SERIAL
     #ifdef ESP8266
         pGsmSerial = new SoftwareSerial();
-        pGsmSerial->begin(baud, SWSERIAL_8N1, rx, tx, false, RX_BUF_SIZE, 0);
+        ((SoftwareSerial*) pGsmSerial)->begin(baud, SWSERIAL_8N1, rx, tx, false, RX_BUF_SIZE, 0);
     #else
         pGsmSerial = new SoftwareSerial(rx, tx);
-        pGsmSerial->begin(baud);
+        ((SoftwareSerial*) pGsmSerial)->begin(baud);
     #endif
 #else
     Serial2.begin(DEFAULT_BAUD_RATE, SERIAL_8N1, rx, tx);
