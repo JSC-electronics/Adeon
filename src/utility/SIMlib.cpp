@@ -310,10 +310,12 @@ char* GSM::ParserGSM::makeDynamicCmd(const char* command, uint8_t id){
     if(_cmdBuffer != nullptr){
         free(_cmdBuffer);
     }
-    _cmdBuffer = (char*)malloc(strlen(command) + 2);
+
+    //+ 3 – array cells for 2 digit number and end char
+    _cmdBuffer = (char*)malloc(strlen(command) + 3);
     strcpy(_cmdBuffer, command);
     sprintf(&_cmdBuffer[strlen(command)], "%d", id);
-    _cmdBuffer[strlen(command) + 1] = '\0';
+    _cmdBuffer[strlen(command) + 2] = '\0';
     return _cmdBuffer;
 }
 
