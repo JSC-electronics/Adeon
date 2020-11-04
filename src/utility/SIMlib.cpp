@@ -233,19 +233,22 @@ bool GSM::ParserGSM::getResponse(const char* searchedChar){
 void GSM::ParserGSM::getMsg(){
     _pRxBuffer = _pSerialHandler->getRxBufferP();
     char* tmpStr = strrchr(_pRxBuffer, '\"') + 3;
-    char* endMsgPointer = strrchr(tmpStr, ';') + 1;
-    uint8_t counter = 0;
+    //if semicolon is not present, message is not valid
+    if(strrchr(tmpStr, ';') != nullptr){
+        char* endMsgPointer = strrchr(tmpStr, ';') + 1;
+        uint8_t counter = 0;
 
-    if(_msgBuffer != nullptr){
-        free(_msgBuffer);
+        if(_msgBuffer != nullptr){
+            free(_msgBuffer);
+        }
+        _msgBuffer = (char*)malloc(strlen(tmpStr) - strlen(endMsgPointer) + 1);
+        while(&tmpStr[counter] != endMsgPointer){
+            _msgBuffer[counter] = tmpStr[counter];
+            counter++;
+        }
+        _msgBuffer[counter] = '\0';
+        *_pNewMsg = true;
     }
-    _msgBuffer = (char*)malloc(strlen(tmpStr) - strlen(endMsgPointer) + 1);
-    while(&tmpStr[counter] != endMsgPointer){
-        _msgBuffer[counter] = tmpStr[counter];
-        counter++;
-    }
-    _msgBuffer[counter] = '\0';
-    *_pNewMsg = true;
 }
 
 /**
