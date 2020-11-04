@@ -216,6 +216,9 @@ void Adeon::parseBuf(const char* pMsg, uint8_t userGroup){
                 }
             }
         }
+        else{
+            Serial.println("Message is invalid");
+        }
         _ready = true;
     }
 }
@@ -337,18 +340,20 @@ uint16_t Adeon::Parser::getValue(){
  */
 bool Adeon::Parser::isHashParsingValid(){
     char* pEndSymbol = strchr(_pMsg, _hashEndSymbol);
-    uint8_t hashLen = strlen(_pMsg) - strlen(pEndSymbol);
-    
-    if(hashLen == SHORT_HASH_LENGTH){
-        // FIXME: Memory crash somewhere in this area. Turning off validation.
-        return true;
-        //
-        memset(_tmpHash, 0, sizeof(_tmpHash));
-        for(int i = 0; i < hashLen; i++){
-            _tmpHash[i] = _pMsg[i];
+    if(pEndSymbol != nullptr){
+        uint8_t hashLen = strlen(_pMsg) - strlen(pEndSymbol);
+        
+        if(hashLen == SHORT_HASH_LENGTH){
+            // FIXME: Memory crash somewhere in this area. Turning off validation.
+            return true;
+            //
+            memset(_tmpHash, 0, sizeof(_tmpHash));
+            for(int i = 0; i < hashLen; i++){
+                _tmpHash[i] = _pMsg[i];
+            }
+            _tmpHash[hashLen] = _nullChar;
+            return _pHash.isHashValid();
         }
-        _tmpHash[hashLen] = _nullChar;
-        return _pHash.isHashValid();
     }
     return false;
 }
