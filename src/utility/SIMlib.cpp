@@ -233,19 +233,22 @@ bool GSM::ParserGSM::getResponse(const char* searchedChar){
 void GSM::ParserGSM::getMsg(){
     _pRxBuffer = _pSerialHandler->getRxBufferP();
     char* tmpStr = strrchr(_pRxBuffer, '\"') + 3;
-    char* endMsgPointer = strrchr(tmpStr, ';') + 1;
-    uint8_t counter = 0;
+    //if semicolon is not present, message is not valid
+    if(strrchr(tmpStr, ';') != nullptr){
+        char* endMsgPointer = strrchr(tmpStr, ';') + 1;
+        uint8_t counter = 0;
 
-    if(_msgBuffer != nullptr){
-        free(_msgBuffer);
+        if(_msgBuffer != nullptr){
+            free(_msgBuffer);
+        }
+        _msgBuffer = (char*)malloc(strlen(tmpStr) - strlen(endMsgPointer) + 1);
+        while(&tmpStr[counter] != endMsgPointer){
+            _msgBuffer[counter] = tmpStr[counter];
+            counter++;
+        }
+        _msgBuffer[counter] = '\0';
+        *_pNewMsg = true;
     }
-    _msgBuffer = (char*)malloc(strlen(tmpStr) - strlen(endMsgPointer) + 1);
-    while(&tmpStr[counter] != endMsgPointer){
-        _msgBuffer[counter] = tmpStr[counter];
-        counter++;
-    }
-    _msgBuffer[counter] = '\0';
-    *_pNewMsg = true;
 }
 
 /**
@@ -310,10 +313,12 @@ char* GSM::ParserGSM::makeDynamicCmd(const char* command, uint8_t id){
     if(_cmdBuffer != nullptr){
         free(_cmdBuffer);
     }
-    _cmdBuffer = (char*)malloc(strlen(command) + 2);
+
+    //+ 3 – array cells for 2 digit number and end char
+    _cmdBuffer = (char*)malloc(strlen(command) + 3);
     strcpy(_cmdBuffer, command);
     sprintf(&_cmdBuffer[strlen(command)], "%d", id);
-    _cmdBuffer[strlen(command) + 1] = '\0';
+    _cmdBuffer[strlen(command) + 2] = '\0';
     return _cmdBuffer;
 }
 

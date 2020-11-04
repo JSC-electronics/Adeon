@@ -92,20 +92,18 @@ class Adeon {
 
                 class Hash {
                     public:
-                        Hash(char* pMsg, char* pMsgHash);
-                        bool isHashValid();
+                        Hash();
+                        bool isHashValid(char* msg, char* hash);
 
                     private:
-                        char* _pMsg = nullptr;
                         char* _pTmpMsg = nullptr;
-                        char* _pMsgHash = nullptr;
-                        char _shortHash[SHORT_HASH_LENGTH];
+                        char _shortHash[SHORT_HASH_LENGTH + 1];
 
-                        void makeHashFromStr();
+                        void makeHashFromStr(char* msg);
                         void makeShortHash(char* str);
                 };
 
-                Hash _pHash = Hash(_pMsg, _tmpHash);
+                Hash _pHash = Hash();
                 State parsState = State::READY;
             
                 char _tmpHash[SHORT_HASH_LENGTH + 1]; // Reserve space for \0 character

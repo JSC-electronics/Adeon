@@ -216,6 +216,9 @@ void Adeon::parseBuf(const char* pMsg, uint8_t userGroup){
                 }
             }
         }
+        else{
+            Serial.println("Message is invalid");
+        }
         _ready = true;
     }
 }
@@ -337,18 +340,14 @@ uint16_t Adeon::Parser::getValue(){
  */
 bool Adeon::Parser::isHashParsingValid(){
     char* pEndSymbol = strchr(_pMsg, _hashEndSymbol);
-    uint8_t hashLen = strlen(_pMsg) - strlen(pEndSymbol);
-    
-    if(hashLen == SHORT_HASH_LENGTH){
-        // FIXME: Memory crash somewhere in this area. Turning off validation.
-        return true;
-        //
-        memset(_tmpHash, 0, sizeof(_tmpHash));
-        for(int i = 0; i < hashLen; i++){
-            _tmpHash[i] = _pMsg[i];
+    //if wrong format (no colon) return false
+    if(pEndSymbol != nullptr){
+        uint8_t hashLen = strlen(_pMsg) - strlen(pEndSymbol);
+        
+        if(hashLen == SHORT_HASH_LENGTH){
+            strncpy(_tmpHash, _pMsg, hashLen);
+            return _pHash.isHashValid(pEndSymbol + 2, _tmpHash);
         }
-        _tmpHash[hashLen] = _nullChar;
-        return _pHash.isHashValid();
     }
     return false;
 }
@@ -456,9 +455,8 @@ char* Adeon::Parser::positionOfStr(char* pStr, uint8_t pos, char startSymbol){
  * @see MD5.cpp 
  * @see MD5.h
  */
-Adeon::Parser::Hash::Hash(char* pMsg, char* pMsgHash){
-    _pMsg = pMsg;
-    _pMsgHash = pMsgHash;
+Adeon::Parser::Hash::Hash(){
+
 }
 
 /**
@@ -466,10 +464,9 @@ Adeon::Parser::Hash::Hash(char* pMsg, char* pMsgHash){
  * @param hashLen is length variable of hash from message. 
  * @return <code>true</code> if hash is matching, <code>false</code> otherwise.
  */
-bool Adeon::Parser::Hash::isHashValid(){
-    _pTmpMsg = strchr(_pMsg, ':') + 2;
-    makeHashFromStr();
-    return(strcmp(_shortHash, _pMsgHash) == 0);
+bool Adeon::Parser::Hash::isHashValid(char* msg, char* hash){
+    makeHashFromStr(msg);
+    return(strcmp(_shortHash, hash) == 0);
 }
 
 /**
@@ -478,8 +475,8 @@ bool Adeon::Parser::Hash::isHashValid(){
  * 
  * Using MD5 encryption algorithm.
  */
-void Adeon::Parser::Hash::makeHashFromStr(){
-    unsigned char* hash = MD5::make_hash(_pTmpMsg);
+void Adeon::Parser::Hash::makeHashFromStr(char* msg){
+    unsigned char* hash = MD5::make_hash(msg);
     char* md5Str = MD5::make_digest(hash, 16);   
     free(hash);
     makeShortHash(md5Str);
