@@ -88,7 +88,7 @@ If message is valid phone number and message text are parsed.
 When the message is processed, SMS is deleted from GSM buffer.
 If GSM buffer keeps more than 10 SMS, whole buffer will be deleted.
  */
-void GSM::checkGsmOutput(){
+bool GSM::checkGsmOutput(){
     _pSerialHandler->periodicSerialCheck();
     //check if SMS is received
     if(_pSerialHandler->isRxBufferAvailable()){
@@ -97,20 +97,37 @@ void GSM::checkGsmOutput(){
                 _pParser->getPhoneNumber();
                 _pParser->getMsg();
                 _pMsgBuffer = _pParser->getPointMsgBuf();
-                if(_lastMsgIndex > 10){
-                    deleteMsgGsmStack();
-                }
-                else{
-                    deleteMsg();
-                }
+                deleteReadMsgs();
+                _pSerialHandler->setRxBufferAvailability(false);
+                return true;
             }
             else{
                 Serial.println(F("ERR"));
-                deleteMsgGsmStack();
             }
         }
     }
     _pSerialHandler->setRxBufferAvailability(false);
+    return false;
+}
+
+void GSM::checkNextGsmBufferIdx(){
+    if(sendCommand(_pParser->makeDynamicCmd(smsReading, _msgSearchIndexer))){
+        _pParser->getPhoneNumber();
+        _pParser->getMsg();
+        _pMsgBuffer = _pParser->getPointMsgBuf();
+    }
+    else{
+        Serial.println(F("ERR"));
+    }
+    deleteReadMsgs();
+
+    //if last received msg index was greater then 20, search whole buffer, else search only 20 cells of buffer
+    if(_lastMsgIndex > GSM_SMS_PART_BUFFER_LEN){
+        (_msgSearchIndexer >= GSM_SMS_BUFFER_LEN) ? _msgSearchIndexer = 1 : _msgSearchIndexer++;
+    }
+    else{
+        (_msgSearchIndexer >= GSM_SMS_PART_BUFFER_LEN) ? _msgSearchIndexer = 1 : _msgSearchIndexer++;
+    }
 }
 
 /**
@@ -161,6 +178,17 @@ void GSM::begin(){
     }
     Serial.println(F("MSG SET TO TEXT"));
     delay(1000);
+    deleteSmsStack();
+
+}
+
+void GSM::deleteSmsStack(){
+    while(sendCommand(deleteSmsBuffer) != true){
+        delay(1000);
+        Serial.println(F("BUFFER DELETING FAILED"));
+    }
+    Serial.println(F("BUFFER DELETED"));
+    delay(1000);
 }
 
 /**
@@ -192,6 +220,18 @@ void GSM::deleteMsg(){
 void GSM::deleteMsgGsmStack(){
     while(_lastMsgIndex != 0){
         deleteMsg();
+    }
+}
+
+/**
+ * @brief Send command for deleting read messages from GSM buffer.
+ */
+void GSM::deleteReadMsgs(){
+    if(sendCommand(deleteReadSms)){
+        //Serial.println(F("MSGS DELETED"));
+    }
+    else{
+        //Serial.println(F("DELETE ERR"));
     }
 }
 
@@ -232,22 +272,25 @@ bool GSM::ParserGSM::getResponse(const char* searchedChar){
  */
 void GSM::ParserGSM::getMsg(){
     _pRxBuffer = _pSerialHandler->getRxBufferP();
-    char* tmpStr = strrchr(_pRxBuffer, '\"') + 3;
+    char* tmpStr = strrchr(_pRxBuffer, '\"');
     //if semicolon is not present, message is not valid
-    if(strrchr(tmpStr, ';') != nullptr){
-        char* endMsgPointer = strrchr(tmpStr, ';') + 1;
-        uint8_t counter = 0;
+    if(tmpStr != nullptr){
+        tmpStr += 3;
+        if(strrchr(tmpStr, ';') != nullptr){
+            char* endMsgPointer = strrchr(tmpStr, ';') + 1;
+            uint8_t counter = 0;
 
-        if(_msgBuffer != nullptr){
-            free(_msgBuffer);
+            if(_msgBuffer != nullptr){
+                free(_msgBuffer);
+            }
+            _msgBuffer = (char*)malloc(strlen(tmpStr) - strlen(endMsgPointer) + 1);
+            while(&tmpStr[counter] != endMsgPointer){
+                _msgBuffer[counter] = tmpStr[counter];
+                counter++;
+            }
+            _msgBuffer[counter] = '\0';
+            *_pNewMsg = true;
         }
-        _msgBuffer = (char*)malloc(strlen(tmpStr) - strlen(endMsgPointer) + 1);
-        while(&tmpStr[counter] != endMsgPointer){
-            _msgBuffer[counter] = tmpStr[counter];
-            counter++;
-        }
-        _msgBuffer[counter] = '\0';
-        *_pNewMsg = true;
     }
 }
 
@@ -256,16 +299,20 @@ void GSM::ParserGSM::getMsg(){
  */
 void GSM::ParserGSM::getPhoneNumber(){
     _pRxBuffer = _pSerialHandler->getRxBufferP();
-    char* tmpStr = strstr(_pRxBuffer, "\"+") + 2;
-    char* endMsgPointer = strstr(tmpStr, "\",\"\",\"");
-    uint8_t counter = 0;
+    char* tmpStr = strstr(_pRxBuffer, "\"+");
+    //if there is the phone number
+    if(tmpStr != nullptr){
+        tmpStr += 2;
+        char* endMsgPointer = strstr(tmpStr, "\",\"\",\"");
+        uint8_t counter = 0;
 
-    memset(_phoneBuffer, 0, sizeof(_phoneBuffer));
-    while(&tmpStr[counter] != endMsgPointer){
-        _phoneBuffer[counter] = tmpStr[counter];
-        counter++;
+        memset(_phoneBuffer, 0, sizeof(_phoneBuffer));
+        while(&tmpStr[counter] != endMsgPointer){
+            _phoneBuffer[counter] = tmpStr[counter];
+            counter++;
+        }
+        _phoneBuffer[counter] = '\0';
     }
-    _phoneBuffer[counter] = '\0';
 }
 
 /**

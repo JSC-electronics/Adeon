@@ -26,6 +26,8 @@
 #include <Arduino.h>
 
 #define DEFAULT_BAUD_RATE       9600
+#define GSM_SMS_BUFFER_LEN      70
+#define GSM_SMS_PART_BUFFER_LEN      20
 
 #if defined(__AVR_ATmega2560__)
     #define HW_SERIAL
@@ -71,10 +73,12 @@ class GSM {
     GSM(Stream* pGsmSerial);
     
     void begin();
-    void checkGsmOutput();
+    bool checkGsmOutput();
     bool isNewMsgAvailable();
+    void checkNextGsmBufferIdx();
     char* getMsg();
     char* getPhoneNum();
+    void deleteSmsStack();
 
   private:
     class SerialHandler{
@@ -124,6 +128,7 @@ class GSM {
     };
 
     bool sendCommand(const char* cmd);
+    void deleteReadMsgs();
     void deleteMsg();
     void deleteMsgGsmStack();
 
@@ -135,6 +140,8 @@ class GSM {
     static constexpr const char* gsmMode = "AT+CFUN=1";
     static constexpr const char* smsReading = "AT+CMGR=";
     static constexpr const char* deleteSms = "AT+CMGD=";
+    static constexpr const char* deleteReadSms = "AT+CMGD=1,1";
+    static constexpr const char* deleteSmsBuffer = "AT+CMGD=1,4";
     static constexpr const char* incomingSms = "CMTI";
 
     ParserGSM* _pParser;
@@ -144,6 +151,7 @@ class GSM {
     char* _pPhoneBuffer;
     uint8_t _lastMsgIndex = 0;
     uint8_t _pwrPin = 0;
+    uint8_t _msgSearchIndexer = 1;
 
     bool _newMsg = false; //if GSM recieve new message, it will be checked by timer
 };
