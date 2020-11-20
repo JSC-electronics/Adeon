@@ -97,12 +97,17 @@ bool GSM::checkGsmOutput(){
                 _pParser->getPhoneNumber();
                 _pParser->getMsg();
                 _pMsgBuffer = _pParser->getPointMsgBuf();
-                deleteReadMsgs();
+                if(_lastMsgIndex < GSM_SMS_PART_BUFFER_LEN){
+                    deleteMsg();
+                }
+                else{
+                    deleteReadMsgs();
+                }
                 _pSerialHandler->setRxBufferAvailability(false);
                 return true;
             }
             else{
-                Serial.println(F("ERR"));
+                Serial.println(F("E: READING INCOMING MSG"));
             }
         }
     }
@@ -112,14 +117,15 @@ bool GSM::checkGsmOutput(){
 
 void GSM::checkNextGsmBufferIdx(){
     if(sendCommand(_pParser->makeDynamicCmd(smsReading, _msgSearchIndexer))){
+        //Serial.print(F("N: READING MSG FROM BUFFER IDX: ")); Serial.println(_msgSearchIndexer);
         _pParser->getPhoneNumber();
         _pParser->getMsg();
         _pMsgBuffer = _pParser->getPointMsgBuf();
+        deleteReadMsgs();
     }
     else{
-        Serial.println(F("ERR"));
+        Serial.print(F("E: READING MSG FROM BUFFER IDX: ")); Serial.println(_msgSearchIndexer);
     }
-    deleteReadMsgs();
 
     //if last received msg index was greater then 20, search whole buffer, else search only 20 cells of buffer
     if(_lastMsgIndex > GSM_SMS_PART_BUFFER_LEN){
@@ -400,7 +406,7 @@ void GSM::SerialHandler::serialWrite(const char* command){
     _periodicReading = false;
     _pGsmSerial->println(command);
 	_pGsmSerial->flush();
-    delay(200);
+    delay(5);
     _periodicReading = true;
 }
 
@@ -418,7 +424,7 @@ void GSM::SerialHandler::periodicSerialCheck(){
         if((millis() - _lastReadTime) >= PERIODIC_READ_TIME){
             uint16_t var;
             var = _pGsmSerial->available();
-            delay(100);
+            delay(150);
             if(var > 0 && _periodicReading){
                 serialRead(var);
             }
@@ -435,7 +441,7 @@ void GSM::SerialHandler::feedbackSerialCheck(){
     while(millis() < (timeFlag + 1000)){
         uint16_t var;
         var = _pGsmSerial->available();
-        delay(100);
+        delay(150);
         if(var > 0){
             serialRead(var);
             break;
