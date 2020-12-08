@@ -28,6 +28,7 @@
 #define DEFAULT_BAUD_RATE       9600
 #define GSM_SMS_BUFFER_LEN      70
 #define GSM_SMS_PART_BUFFER_LEN      20
+#define WAIT_FOR_FEEDBACK            250
 
 #if defined(__AVR_ATmega2560__)
     #define HW_SERIAL

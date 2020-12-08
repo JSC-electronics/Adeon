@@ -168,21 +168,21 @@ char* GSM::getPhoneNum(){
 void GSM::begin(){
     while(sendCommand(basicCommand) != true){
         delay(1000);
-        Serial.println(F("GSM IS OFFLINE"));
+        Serial.println(F("ADEON: GSM IS OFFLINE"));
     }
-    Serial.println(F("GSM IS ONLINE"));
+    Serial.println(F("ADEON: GSM IS ONLINE"));
     delay(1000);
     while(sendCommand(gsmMode) != true){
         delay(1000);
-        Serial.println(F("CONFIG FAILED"));
+        Serial.println(F("ADEON: CONFIG FAILED"));
     }
-    Serial.println(F("GSM IS CONFIGURED"));
+    Serial.println(F("ADEON: GSM IS CONFIGURED"));
     delay(1000);
     while(sendCommand(plainTextMode) != true){
         delay(1000);
-        Serial.println(F("MSG SETTING FAILED"));
+        Serial.println(F("ADEON: MSG SETTING FAILED"));
     }
-    Serial.println(F("MSG SET TO TEXT"));
+    Serial.println(F("ADEON: MSG SET TO TEXT"));
     delay(1000);
     deleteSmsStack();
 
@@ -406,7 +406,6 @@ void GSM::SerialHandler::serialWrite(const char* command){
     _periodicReading = false;
     _pGsmSerial->println(command);
 	_pGsmSerial->flush();
-    delay(5);
     _periodicReading = true;
 }
 
@@ -415,6 +414,7 @@ void GSM::SerialHandler::serialWrite(const char* command){
  * Searching for incoming GSM output
  */
 void GSM::SerialHandler::periodicSerialCheck(){
+    uint16_t var = 0;
     if(_periodicReading){
         if(_periodicReadingFlag){
             _lastReadTime = millis();
@@ -422,9 +422,8 @@ void GSM::SerialHandler::periodicSerialCheck(){
         }
 
         if((millis() - _lastReadTime) >= PERIODIC_READ_TIME){
-            uint16_t var;
+            delay(20);
             var = _pGsmSerial->available();
-            delay(150);
             if(var > 0 && _periodicReading){
                 serialRead(var);
             }
@@ -437,15 +436,16 @@ void GSM::SerialHandler::periodicSerialCheck(){
  * @brief Checks serial for feedback of GSM module to AT commands
  */
 void GSM::SerialHandler::feedbackSerialCheck(){
+    uint16_t var = 0;
     unsigned long timeFlag = millis();
-    while(millis() < (timeFlag + 1000)){
-        uint16_t var;
+    while(millis() < (timeFlag + WAIT_FOR_FEEDBACK)){
+        delay(50);
         var = _pGsmSerial->available();
-        delay(150);
         if(var > 0){
             serialRead(var);
             break;
         }
+        var = 0;
     }
 }
 
@@ -486,5 +486,6 @@ void GSM::SerialHandler::serialRead(uint8_t incomingBytes){
     _pGsmSerial->readBytes(_rxBuffer, incomingBytes);
     _rxBuffer[incomingBytes] = '\0';
     _rxBufferAvailable = true;
+    //Serial.print("SERIAL: "); Serial.println(_rxBuffer);
 }
 
