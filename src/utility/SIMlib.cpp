@@ -309,15 +309,16 @@ void GSM::ParserGSM::getPhoneNumber(){
     //if there is the phone number
     if(tmpStr != nullptr){
         tmpStr += 2;
-        char* endMsgPointer = strstr(tmpStr, "\",\"\",\"");
-        uint8_t counter = 0;
-
-        memset(_phoneBuffer, 0, sizeof(_phoneBuffer));
-        while(&tmpStr[counter] != endMsgPointer){
-            _phoneBuffer[counter] = tmpStr[counter];
-            counter++;
+        char* endMsgPointer = strstr(tmpStr, "\",\"\",\"");        
+        if(endMsgPointer != nullptr){
+            uint8_t counter = 0;
+            memset(_phoneBuffer, 0, sizeof(_phoneBuffer));
+            while(&tmpStr[counter] != endMsgPointer){
+                _phoneBuffer[counter] = tmpStr[counter];
+                counter++;
+            }
+            _phoneBuffer[counter] = '\0';
         }
-        _phoneBuffer[counter] = '\0';
     }
 }
 
