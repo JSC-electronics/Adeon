@@ -12,9 +12,5 @@ var classItemList =
     [ "getNumOfItems", "classItemList.html#a9403067b7748c817996c061461ca0326", null ],
     [ "isIdLenValid", "classItemList.html#a183f3525a3ee11969df105b5a396f751", null ],
     [ "isInList", "classItemList.html#a2f82d1bacfaf8e0176c895596f8e19e0", null ],
-    [ "isListEmpty", "classItemList.html#a36d07540229950456e8efdf6272d8fbc", null ],
-    [ "printData", "classItemList.html#a791e132b055611963febefbd09eddac3", null ],
-    [ "_numOfItems", "classItemList.html#a91c82554ea8f53f5ef2979e8b1cabc3f", null ],
-    [ "_pHead", "classItemList.html#a7ba20955d688e2dfe634ae501755cd54", null ],
-    [ "_pLast", "classItemList.html#ab5e3d7057e168afcaef0d0c8ada0ccdf", null ]
+    [ "printData", "classItemList.html#a791e132b055611963febefbd09eddac3", null ]
 ];
