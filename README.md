@@ -1,7 +1,9 @@
 # ADEON
-[![Build Status](https://travis-ci.com/JSC-electronics/Adeon.svg?branch=master)](https://travis-ci.com/JSC-electronics/Adeon)
-[![GitHub release](https://img.shields.io/github/release/JSC-electronics/Adeon.svg?maxAge=3600)](https://github.com/JSC-electronics/Adeon/releases)
+[![Arduino_CI](https://github.com/JSC-electronics/Adeon/actions/workflows/arduino_ci.yml/badge.svg)](https://github.com/JSC-electronics/Adeon/actions/workflows/arduino_ci.yml)
+[![Documentation](https://github.com/JSC-electronics/Adeon/actions/workflows/doxygen.yml/badge.svg)](https://github.com/JSC-electronics/Adeon/actions/workflows/doxygen.yml)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache--2.0-green.svg)](https://github.com/JSC-electronics/Adeon/blob/master/LICENSE)
+[![GitHub release](https://img.shields.io/github/release/JSC-electronics/Adeon.svg?maxAge=3600)](https://github.com/JSC-electronics/Adeon/releases)
+[![JSC electronics](https://img.shields.io/badge/JSC-electronics-green.svg)](https://www.jsce.cz/)
 [![Donate](https://img.shields.io/badge/donate-PayPal-blueviolet.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=SESX9ABM7V8KA&source=url)
 
 <img align="right" src="images\adeon-logo-192x192.png">
